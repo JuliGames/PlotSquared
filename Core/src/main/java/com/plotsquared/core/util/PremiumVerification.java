@@ -64,7 +64,7 @@ public class PremiumVerification {
      * @return if is premium
      */
     public static Boolean isPremium() {
-        return usingPremium == null ? (usingPremium = isPremium(getUserID())) : usingPremium;
+        return true;
     }
 
 }
