@@ -25,6 +25,7 @@
  */
 package com.plotsquared.bukkit.permissions;
 
+import com.google.common.collect.Lists;
 import com.plotsquared.bukkit.player.BukkitPlayer;
 import com.plotsquared.core.permissions.ConsolePermissionProfile;
 import com.plotsquared.core.permissions.PermissionHandler;
@@ -37,7 +38,10 @@ import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
 import java.lang.ref.WeakReference;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.EnumSet;
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
@@ -45,6 +49,7 @@ public class BukkitPermissionHandler implements PermissionHandler {
 
     @Override
     public void initialize() {
+        System.out.println("P2 - BUKKIT PERMS");
     }
 
     @NonNull
@@ -89,9 +94,96 @@ public class BukkitPermissionHandler implements PermissionHandler {
                 final @NonNull String permission
         ) {
             final Player player = this.playerReference.get();
-            return player != null && player.hasPermission(permission);
+            if(player == null) return false;
+
+            // FIXED PERMISSION CHECK BY ROOOT
+            if(player.hasPermission(permission)) return true;
+            if(!permission.contains(".")) return false;
+            String[] parts = permission.split("\\.");
+            boolean has = false;
+
+            ArrayList<String> perms2check = new ArrayList<>();
+
+            for (int i = 0; i < parts.length; i++) {
+                String part = parts[i];
+
+                if(i > 0) {
+                    String[] nodesBefore = Arrays.copyOfRange(parts, 0, i);
+
+                    ArrayList<String> nodes = new ArrayList<>(Arrays.asList(nodesBefore));
+                    String node = "";
+                    for (final String nd : nodes) {
+                        node = node + nd+".";
+                    }
+
+                    nodes.add(part);
+
+                    String perm;
+                    if(i == parts.length-1) {
+                        perm = node+part;
+                    } else {
+                        perm = node+part+".*";
+                    }
+
+                    perms2check.add(perm);
+                }
+
+            }
+
+            List<String> finalPerms2Check = Lists.reverse(perms2check);
+            finalPerms2Check.add(parts[0]+".*");
+            finalPerms2Check.add("*");
+
+            for (final String s : finalPerms2Check) {
+                if(player.isPermissionSet(s) && player.hasPermission(s)) {
+                    //System.out.println(s+": yes");
+                    has = true;
+                } else {
+                    if(player.isPermissionSet(s) && !player.hasPermission(s)) {
+                        //System.out.println(s+": no");
+                        has = false;
+                    }/*else{System.out.println(s+": idc");}*/
+                }
+            }
+
+            return has;
         }
 
     }
 
+    public static void main(String[] args) {
+        String permission = "plots.admin.destroy.other";
+        String[] parts = permission.split("\\.");
+        boolean has = false;
+        // match: *, plots.*, plots.admin.*, plots.admin.destroy.*, plots.admin.destroy.*
+        // plots.admin.destroy.other
+        for (int i = 0; i < parts.length; i++) {
+            String part = parts[i];
+
+            if(i == 0) {
+                System.out.println("check: "+part+".*"+" ("+i+")");
+            }
+
+            if(i > 0) {
+                String[] nodesBefore = Arrays.copyOfRange(parts, 0, i);
+                ArrayList<String> nodes = new ArrayList<>();
+
+                for (final String s : nodesBefore) {
+                    nodes.add(s);
+                }
+                String node = "";
+                for (final String nd : nodes) {
+                    node = node + nd+".";
+                }
+
+                nodes.add(part);
+
+                if(i == parts.length-1) {
+                    System.out.println("check: "+node+part+" ("+i+")");
+                } else {
+                    System.out.println("check: "+node+part+".*"+" ("+i+")");
+                }
+            }
+        }
+    }
 }

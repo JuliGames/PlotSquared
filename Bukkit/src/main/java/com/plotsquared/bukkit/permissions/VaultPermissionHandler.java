@@ -44,8 +44,8 @@ import java.util.EnumSet;
 import java.util.Optional;
 import java.util.Set;
 
-public class VaultPermissionHandler implements PermissionHandler {
-
+public class VaultPermissionHandler extends BukkitPermissionHandler {
+/* // Rooot - fix perms
     private Permission permissions;
 
     @Override
@@ -118,5 +118,5 @@ public class VaultPermissionHandler implements PermissionHandler {
         }
 
     }
-
+*/
 }

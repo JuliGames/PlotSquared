@@ -39,7 +39,7 @@ public class PermissionModule extends AbstractModule {
     @Singleton
     PermissionHandler providePermissionHandler() {
         try {
-            if (Bukkit.getPluginManager().isPluginEnabled("Vault")) {
+            if (false && Bukkit.getPluginManager().isPluginEnabled("Vault")) { // Rooot - fix perms
                 return new VaultPermissionHandler();
             }
         } catch (final Exception ignored) {
