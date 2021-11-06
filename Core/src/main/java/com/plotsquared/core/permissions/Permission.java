@@ -204,7 +204,8 @@ public enum Permission {
     PERMISSION_ADMIN_DEBUG_OTHER("plots.admin.debug.other"),
     PERMISSION_RATE("plots.rate"),
     PERMISSION_ADMIN_FLIGHT("plots.admin.flight"),
-    PERMISSION_ADMIN_COMPONENTS_OTHER("plots.admin.component.other");
+    PERMISSION_ADMIN_COMPONENTS_OTHER("plots.admin.component.other"),
+    PERMISSION_ADMIN_BYPASS_BORDER("plots.admin.border.bypass");
     //</editor-fold>
 
     private final String text;
@@ -213,7 +214,8 @@ public enum Permission {
         this.text = text;
     }
 
-    @Override public String toString() {
+    @Override
+    public String toString() {
         return this.text;
     }
 

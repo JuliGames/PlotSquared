@@ -26,12 +26,14 @@
 package com.plotsquared.core.configuration;
 
 import com.plotsquared.core.configuration.file.YamlConfiguration;
+import net.kyori.adventure.text.event.ClickEvent;
 
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class Settings extends Config {
 
@@ -498,10 +500,12 @@ public class Settings extends Config {
                 "notify-enter, notify-leave, greeting or farewell flag."})
         public static boolean NOTIFICATION_AS_ACTIONBAR = false;
 
-        @Comment({"Whether to strip any possible <click_event> components from user-defined messages, e.g. plot greeting",
-                "This can allow players to use commands to give themselves ranks as commands ran in this fashion cannot be prevent by " +
-                        "permissions etc."})
-        public static boolean REMOVE_USER_DEFINED_CLICK_EVENTS = true;
+        @Comment({"The click event actions that should be removed from user input in e.g. plot flags like 'greeting'.",
+                "Actions like 'RUN_COMMAND' may be used maliciously as players could trick staff into clicking on messages",
+                "triggering destructive commands."})
+        public static List<String> CLICK_EVENT_ACTIONS_TO_REMOVE = Arrays.stream(ClickEvent.Action.values())
+                .map(Enum::name)
+                .collect(Collectors.toList());
 
     }
 
@@ -563,6 +567,8 @@ public class Settings extends Config {
         public static boolean ON_DELETE = false;
         @Comment("The visit command is ordered by world instead of globally")
         public static boolean PER_WORLD_VISIT = false;
+        @Comment("Search merged plots for having multiple owners when using the visit command")
+        public static boolean VISIT_MERGED_OWNERS = true;
 
     }
 
@@ -670,7 +676,9 @@ public class Settings extends Config {
                 "  - 2 - Only execute lighting where blocks with light values are placed or removed/replaced",
                 "  - 3 - Always execute lighting (slowest)"})
         public static int LIGHTING_MODE = 1;
-
+        @Comment({"If blocks at the edges of queued operations should be set causing updates",
+                " - Slightly slower, but prevents issues such as fences left connected to nothing"})
+        public static boolean UPDATE_EDGES = true;
     }
 
     @Comment("Settings related to tab completion")
@@ -700,6 +708,9 @@ public class Settings extends Config {
                 "If you would like to still show the owner of the plot, append the contents of \"titles.title_entered_plot_sub\" onto the " +
                         "former lang key."})
         public static boolean TITLES_AS_ACTIONBAR = false;
+        @Comment({"If the default title should be displayed on plots with server-plot flag set.",
+                "Titles will still be sent if the plot-title flag is set."})
+        public static boolean DISPLAY_DEFAULT_ON_SERVER_PLOT = false;
 
     }
 
@@ -788,6 +799,7 @@ public class Settings extends Config {
         );
         @Comment("Whether PlotSquared should hook into MvDWPlaceholderAPI or not")
         public static boolean USE_MVDWAPI = true;
+
     }
 
 }

@@ -152,7 +152,8 @@ public class PlotAPI {
      */
     public void sendConsoleMessage(
             final @NonNull String message,
-            final @NonNull Template @NonNull... replacements) {
+            final @NonNull Template @NonNull ... replacements
+    ) {
         ConsolePlayer.getConsole().sendMessage(StaticCaption.of(message), replacements);
     }
 
@@ -164,7 +165,7 @@ public class PlotAPI {
      */
     public void sendConsoleMessage(
             final @NonNull Caption caption,
-            final @NonNull Template @NonNull... replacements
+            final @NonNull Template @NonNull ... replacements
     ) {
         ConsolePlayer.getConsole().sendMessage(caption, replacements);
     }
@@ -186,7 +187,7 @@ public class PlotAPI {
      * different UUIDs than Bukkit</i>
      *
      * @param uuid the uuid of the player to wrap
-     * @return a {@code PlotPlayer}
+     * @return a {@link PlotPlayer}
      */
     public @Nullable PlotPlayer<?> wrapPlayer(final @NonNull UUID uuid) {
         return PlotSquared.platform().playerManager().getPlayerIfExists(uuid);
@@ -196,7 +197,7 @@ public class PlotAPI {
      * Gets the PlotPlayer for a username.
      *
      * @param player the player to wrap
-     * @return a {@code PlotPlayer}
+     * @return a {@link PlotPlayer}
      */
     public @Nullable PlotPlayer<?> wrapPlayer(final @NonNull String player) {
         return PlotSquared.platform().playerManager().getPlayerIfExists(player);

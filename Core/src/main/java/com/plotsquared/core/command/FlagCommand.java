@@ -27,6 +27,7 @@ package com.plotsquared.core.command;
 
 import com.plotsquared.core.PlotSquared;
 import com.plotsquared.core.configuration.Settings;
+import com.plotsquared.core.configuration.caption.CaptionUtility;
 import com.plotsquared.core.configuration.caption.StaticCaption;
 import com.plotsquared.core.configuration.caption.Templates;
 import com.plotsquared.core.configuration.caption.TranslatableCaption;
@@ -101,22 +102,23 @@ public final class FlagCommand extends Command {
             try {
                 int numeric = Integer.parseInt(value);
                 perm = perm.substring(0, perm.length() - value.length() - 1);
+                boolean result = false;
                 if (numeric > 0) {
                     int checkRange = PlotSquared.get().getPlatform().equalsIgnoreCase("bukkit") ?
                             numeric :
                             Settings.Limit.MAX_PLOTS;
-                    final boolean result = player.hasPermissionRange(perm, checkRange) >= numeric;
-                    if (!result) {
-                        player.sendMessage(
-                                TranslatableCaption.of("permission.no_permission"),
-                                Template.of(
-                                        "node",
-                                        Permission.PERMISSION_SET_FLAG_KEY_VALUE.format(key.toLowerCase(), value.toLowerCase())
-                                )
-                        );
-                    }
-                    return result;
+                    result = player.hasPermissionRange(perm, checkRange) >= numeric;
                 }
+                if (!result) {
+                    player.sendMessage(
+                            TranslatableCaption.of("permission.no_permission"),
+                            Template.of(
+                                    "node",
+                                    perm
+                            )
+                    );
+                }
+                return result;
             } catch (NumberFormatException ignore) {
             }
         } else if (flag instanceof final ListFlag<?, ?> listFlag) {
@@ -146,7 +148,14 @@ public final class FlagCommand extends Command {
             }
             return true;
         }
-        final boolean result = Permissions.hasPermission(player, perm);
+        boolean result;
+        String basePerm = Permission.PERMISSION_SET_FLAG_KEY.format(key.toLowerCase());
+        if (flag.isValuedPermission()) {
+            result = Permissions.hasKeyedPermission(player, basePerm, value);
+        } else {
+            result = Permissions.hasPermission(player, basePerm);
+            perm = basePerm;
+        }
         if (!result) {
             player.sendMessage(TranslatableCaption.of("permission.no_permission"), Template.of("node", perm));
         }
@@ -335,10 +344,11 @@ public final class FlagCommand extends Command {
             return;
         }
         boolean force = event.getEventResult() == Result.FORCE;
-        final String value = StringMan.join(Arrays.copyOfRange(args, 1, args.length), " ");
+        String value = StringMan.join(Arrays.copyOfRange(args, 1, args.length), " ");
         if (!force && !checkPermValue(player, plotFlag, args[0], value)) {
             return;
         }
+        value = CaptionUtility.stripClickEvents(plotFlag, value);
         final PlotFlag<?, ?> parsed;
         try {
             parsed = plotFlag.parse(value);
@@ -353,7 +363,8 @@ public final class FlagCommand extends Command {
         }
         plot.setFlag(parsed);
         player.sendMessage(TranslatableCaption.of("flag.flag_added"), Template.of("flag", String.valueOf(args[0])),
-                Template.of("value", String.valueOf(parsed)));
+                Template.of("value", String.valueOf(parsed))
+        );
     }
 
     @CommandDeclaration(command = "add",
@@ -420,7 +431,8 @@ public final class FlagCommand extends Command {
             return;
         }
         player.sendMessage(TranslatableCaption.of("flag.flag_added"), Template.of("flag", String.valueOf(args[0])),
-                Template.of("value", String.valueOf(parsed)));
+                Template.of("value", String.valueOf(parsed))
+        );
     }
 
     @CommandDeclaration(command = "remove",
@@ -529,7 +541,8 @@ public final class FlagCommand extends Command {
                 return;
             }
         }
-        player.sendMessage(TranslatableCaption.of("flag.flag_removed"), Template.of("flag", args[0]), Template.of("value",
+        player.sendMessage(TranslatableCaption.of("flag.flag_removed"), Template.of("flag", args[0]), Template.of(
+                "value",
                 String.valueOf(flag)
         ));
     }
@@ -572,7 +585,8 @@ public final class FlagCommand extends Command {
             while (flagIterator.hasNext()) {
                 final String flag = flagIterator.next();
                 builder.append(MINI_MESSAGE
-                        .parse(TranslatableCaption.of("flag.flag_list_flag").getComponent(player),
+                        .parse(
+                                TranslatableCaption.of("flag.flag_list_flag").getComponent(player),
                                 Template.of("command", "/plot flag info " + flag),
                                 Template.of("flag", flag),
                                 Template.of("suffix", flagIterator.hasNext() ? ", " : "")

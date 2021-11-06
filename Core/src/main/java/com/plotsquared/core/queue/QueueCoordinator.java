@@ -39,6 +39,9 @@ import com.sk89q.worldedit.world.World;
 import com.sk89q.worldedit.world.biome.BiomeType;
 import com.sk89q.worldedit.world.block.BaseBlock;
 import com.sk89q.worldedit.world.block.BlockState;
+
+import java.util.concurrent.atomic.AtomicBoolean;
+
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
@@ -51,6 +54,7 @@ public abstract class QueueCoordinator {
     private boolean forceSync = false;
     @Nullable
     private Object chunkObject;
+    private final AtomicBoolean enqueued = new AtomicBoolean();
 
     @Inject
     private GlobalBlockQueue blockQueue;
@@ -190,7 +194,8 @@ public abstract class QueueCoordinator {
      * @param z block z
      * @return WorldEdit BlockState
      */
-    public @Nullable abstract BlockState getBlock(int x, int y, int z);
+    public @Nullable
+    abstract BlockState getBlock(int x, int y, int z);
 
     /**
      * Set a biome in XZ. This will likely set to the whole column
@@ -199,10 +204,9 @@ public abstract class QueueCoordinator {
      * @param z     z coordinate
      * @param biome biome
      * @return success or not
-     *
-     * @deprecated Biomes now take XYZ, see {@code setBiome int x, int y, int z}
-     * <br>
-     * Scheduled for removal once we drop the support for versions not supporting 3D biomes.
+     * @deprecated Biomes now take XYZ, see {@link #setBiome(int, int, int, BiomeType)}
+     *         <br>
+     *         Scheduled for removal once we drop the support for versions not supporting 3D biomes.
      */
     @Deprecated(forRemoval = true)
     public abstract boolean setBiome(int x, int z, @NonNull BiomeType biome);
@@ -249,7 +253,8 @@ public abstract class QueueCoordinator {
      *
      * @return list of BlockVector2 of chunks that are to be "read"
      */
-    public @NonNull abstract List<BlockVector2> getReadChunks();
+    public @NonNull
+    abstract List<BlockVector2> getReadChunks();
 
     /**
      * Add a set of {@link BlockVector2} Chunk coordinates to the Read Chunks list
@@ -284,7 +289,8 @@ public abstract class QueueCoordinator {
      *
      * @return CuboidRegion to regenerate
      */
-    public @Nullable abstract CuboidRegion getRegenRegion();
+    public @Nullable
+    abstract CuboidRegion getRegenRegion();
 
     /**
      * Set the {@link CuboidRegion} designated for direct regeneration
@@ -306,7 +312,8 @@ public abstract class QueueCoordinator {
      *
      * @return world of the queue
      */
-    public @Nullable abstract World getWorld();
+    public @Nullable
+    abstract World getWorld();
 
     /**
      * Set the queue as having been modified now
@@ -316,12 +323,17 @@ public abstract class QueueCoordinator {
     }
 
     /**
-     * Enqueue the queue with the {@link GlobalBlockQueue}
+     * Enqueue the queue to start it
      *
      * @return success or not
      */
     public boolean enqueue() {
-        return blockQueue.enqueue(this);
+        boolean success = false;
+        if (enqueued.compareAndSet(false, true)) {
+            success = true;
+            start();
+        }
+        return success;
     }
 
     /**
@@ -330,7 +342,7 @@ public abstract class QueueCoordinator {
     public abstract void start();
 
     /**
-     * Cancel the queue. Not yet implemented.
+     * Cancel the queue
      */
     public abstract void cancel();
 
@@ -353,7 +365,8 @@ public abstract class QueueCoordinator {
      *
      * @return Consumer to be executed on each chunk in queue
      */
-    public @Nullable abstract Consumer<BlockVector2> getChunkConsumer();
+    public @Nullable
+    abstract Consumer<BlockVector2> getChunkConsumer();
 
     /**
      * Set the Consumer that will be executed on each chunk in queue
@@ -370,7 +383,8 @@ public abstract class QueueCoordinator {
     /**
      * Get the {@link LightingMode} to be used when setting blocks
      */
-    public @NonNull abstract LightingMode getLightingMode();
+    public @NonNull
+    abstract LightingMode getLightingMode();
 
     /**
      * Set the {@link LightingMode} to be used when setting blocks

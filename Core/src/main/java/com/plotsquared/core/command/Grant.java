@@ -83,7 +83,7 @@ public class Grant extends Command {
                     );
                     return CompletableFuture.completedFuture(false);
                 }
-                if (args.length > 2) {
+                if (args.length != 2) {
                     break;
                 }
                 PlayerManager.getUUIDsFromString(args[1], (uuids, throwable) -> {
@@ -164,8 +164,8 @@ public class Grant extends Command {
                 completions.add("check");
             }
             final List<Command> commands = completions.stream().filter(completion -> completion
-                    .toLowerCase()
-                    .startsWith(args[0].toLowerCase()))
+                            .toLowerCase()
+                            .startsWith(args[0].toLowerCase()))
                     .map(completion -> new Command(
                             null,
                             true,
@@ -176,11 +176,11 @@ public class Grant extends Command {
                     ) {
                     }).collect(Collectors.toCollection(LinkedList::new));
             if (Permissions.hasPermission(player, Permission.PERMISSION_GRANT_SINGLE) && args[0].length() > 0) {
-                commands.addAll(TabCompletions.completePlayers(args[0], Collections.emptyList()));
+                commands.addAll(TabCompletions.completePlayers(player, args[0], Collections.emptyList()));
             }
             return commands;
         }
-        return TabCompletions.completePlayers(String.join(",", args).trim(), Collections.emptyList());
+        return TabCompletions.completePlayers(player, String.join(",", args).trim(), Collections.emptyList());
     }
 
 }

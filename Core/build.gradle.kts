@@ -25,14 +25,14 @@ dependencies {
     compileOnlyApi(libs.findbugs)
 
     // Plugins
-    compileOnlyApi(libs.worldeditCore) {
+    compileOnly(libs.worldeditCore) {
         exclude(group = "bukkit-classloader-check")
         exclude(group = "mockito-core")
         exclude(group = "dummypermscompat")
     }
     testImplementation(libs.worldeditCore)
-    compileOnlyApi(libs.fastasyncworldeditCore)
-    testImplementation(libs.fastasyncworldeditCore)
+    compileOnly(libs.fastasyncworldeditCore) { isTransitive = false }
+    testImplementation(libs.fastasyncworldeditCore) { isTransitive = false }
 
     // Logging
     compileOnlyApi(libs.log4j)

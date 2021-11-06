@@ -140,18 +140,13 @@ public class Visit extends Command {
                 return;
             }
         } else {
-            if (!Permissions.hasPermission(player, Permission.PERMISSION_VISIT_OTHER)) {
+            // allow visit, if UntrustedVisit flag is set, or if the player has either the plot.visit.other or
+            // plot.admin.visit.untrusted permission
+            if (!plot.getFlag(UntrustedVisitFlag.class) && !Permissions.hasPermission(player, Permission.PERMISSION_VISIT_OTHER)
+                && !Permissions.hasPermission(player, Permission.PERMISSION_ADMIN_VISIT_UNTRUSTED)) {
                 player.sendMessage(
                         TranslatableCaption.of("permission.no_permission"),
                         Templates.of("node", "plots.visit.other")
-                );
-                return;
-            }
-            if (!plot.getFlag(UntrustedVisitFlag.class) && !Permissions
-                    .hasPermission(player, Permission.PERMISSION_ADMIN_VISIT_UNTRUSTED)) {
-                player.sendMessage(
-                        TranslatableCaption.of("permission.no_permission"),
-                        Templates.of("node", "plots.admin.visit.untrusted")
                 );
                 return;
             }
@@ -166,7 +161,7 @@ public class Visit extends Command {
             }
         }
 
-        confirm.run(this, () -> plot.teleportPlayer(player, TeleportCause.COMMAND, result -> {
+        confirm.run(this, () -> plot.teleportPlayer(player, TeleportCause.COMMAND_VISIT, result -> {
             if (result) {
                 whenDone.run(Visit.this, CommandResult.SUCCESS);
             } else {
@@ -239,9 +234,15 @@ public class Visit extends Command {
                             );
                         } else {
                             final UUID uuid = uuids.toArray(new UUID[0])[0];
+                            PlotQuery query = PlotQuery.newQuery();
+                            if (Settings.Teleport.VISIT_MERGED_OWNERS) {
+                                query.ownersInclude(uuid);
+                            } else {
+                                query.whereBasePlot().ownedBy(uuid);
+                            }
                             this.visit(
                                     player,
-                                    PlotQuery.newQuery().ownedBy(uuid).whereBasePlot(),
+                                    query,
                                     finalSortByArea,
                                     confirm,
                                     whenDone,
@@ -328,7 +329,7 @@ public class Visit extends Command {
     public Collection<Command> tab(PlotPlayer<?> player, String[] args, boolean space) {
         final List<Command> completions = new ArrayList<>();
         switch (args.length - 1) {
-            case 0 -> completions.addAll(TabCompletions.completePlayers(args[0], Collections.emptyList()));
+            case 0 -> completions.addAll(TabCompletions.completePlayers(player, args[0], Collections.emptyList()));
             case 1 -> {
                 completions.addAll(
                         TabCompletions.completeAreas(args[1]));

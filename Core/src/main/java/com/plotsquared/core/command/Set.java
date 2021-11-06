@@ -282,13 +282,13 @@ public class Set extends SubCommand {
                 completions.add("middle");
             }
             final List<Command> commands = completions.stream().filter(completion -> completion
-                    .toLowerCase()
-                    .startsWith(args[0].toLowerCase()))
+                            .toLowerCase()
+                            .startsWith(args[0].toLowerCase()))
                     .map(completion -> new Command(null, true, completion, "", RequiredType.NONE, CommandCategory.APPEARANCE) {
                     }).collect(Collectors.toCollection(LinkedList::new));
 
             if (Permissions.hasPermission(player, Permission.PERMISSION_SET) && args[0].length() > 0) {
-                commands.addAll(TabCompletions.completePlayers(args[0], Collections.emptyList()));
+                commands.addAll(TabCompletions.completePlayers(player, args[0], Collections.emptyList()));
             }
             return commands;
         } else if (args.length > 1) {

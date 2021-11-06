@@ -1,26 +1,24 @@
 import com.github.jengelman.gradle.plugins.shadow.ShadowPlugin
 import org.cadixdev.gradle.licenser.LicenseExtension
 import org.cadixdev.gradle.licenser.Licenser
+import java.net.URI
 
 plugins {
     java
     `java-library`
     `maven-publish`
-    id("com.github.johnrengelman.shadow") version "7.0.0"
-    id("org.cadixdev.licenser") version "0.6.1"
-    id("org.ajoberstar.grgit") version "4.1.0"
+    signing
+
+    alias(libs.plugins.shadow)
+    alias(libs.plugins.licenser)
+    alias(libs.plugins.grgit)
+    alias(libs.plugins.nexus)
 
     eclipse
     idea
 }
 
-var ver by extra("6.0.8")
-var versuffix by extra("-SNAPSHOT")
-val versionsuffix: String? by project
-if (versionsuffix != null) {
-    versuffix = "-$versionsuffix"
-}
-version = ver + versuffix
+version = "6.1.4-SNAPSHOT"
 
 allprojects {
     group = "com.plotsquared"
@@ -58,21 +56,10 @@ subprojects {
         plugin<MavenPublishPlugin>()
         plugin<ShadowPlugin>()
         plugin<Licenser>()
+        plugin<SigningPlugin>()
 
         plugin<EclipsePlugin>()
         plugin<IdeaPlugin>()
-    }
-
-    tasks {
-        // This is to create the target dir under the root project with all jars.
-        val assembleTargetDir = create<Copy>("assembleTargetDirectory") {
-            destinationDir = rootDir.resolve("target")
-            into(destinationDir)
-            from(withType<Jar>())
-        }
-        named("build") {
-            dependsOn(assembleTargetDir)
-        }
     }
 }
 
@@ -81,12 +68,12 @@ allprojects {
     dependencies {
         // Tests
         testImplementation("junit:junit:4.13.2")
+        testImplementation("org.junit.jupiter:junit-jupiter:5.8.1")
     }
 
     plugins.withId("java") {
         the<JavaPluginExtension>().toolchain {
             languageVersion.set(JavaLanguageVersion.of(16))
-            vendor.set(JvmVendorSpec.ADOPTOPENJDK)
         }
     }
 
@@ -101,14 +88,32 @@ allprojects {
         withJavadocJar()
     }
 
+    val javaComponent = components["java"] as AdhocComponentWithVariants
+    javaComponent.withVariantsFromConfiguration(configurations["shadowRuntimeElements"]) {
+        skip()
+    }
+
+    signing {
+        if (!version.toString().endsWith("-SNAPSHOT")) {
+            val signingKey: String? by project
+            val signingPassword: String? by project
+            useInMemoryPgpKeys(signingKey, signingPassword)
+            signing.isRequired
+            sign(publishing.publications)
+        }
+    }
+
     publishing {
         publications {
             create<MavenPublication>("maven") {
-                // This includes not only the original jar (i.e. not shadowJar),
-                // but also sources & javadocs due to the above java block.
                 from(components["java"])
 
                 pom {
+
+                    name.set(project.name + " " + project.version)
+                    description.set("PlotSquared is a land and world management plugin for Minecraft.")
+                    url.set("https://github.com/IntellectualSites/PlotSquared")
+
                     licenses {
                         license {
                             name.set("GNU General Public License, Version 3.0")
@@ -121,18 +126,23 @@ allprojects {
                         developer {
                             id.set("Sauilitired")
                             name.set("Alexander Söderberg")
+                            organization.set("IntellectualSites")
                         }
                         developer {
                             id.set("NotMyFault")
                             name.set("NotMyFault")
+                            organization.set("IntellectualSites")
+                            email.set("contact@notmyfault.dev")
                         }
                         developer {
                             id.set("SirYwell")
                             name.set("Hannes Greule")
+                            organization.set("IntellectualSites")
                         }
                         developer {
                             id.set("dordsor21")
                             name.set("dordsor21")
+                            organization.set("IntellectualSites")
                         }
                     }
 
@@ -141,35 +151,12 @@ allprojects {
                         connection.set("scm:https://IntellectualSites@github.com/IntellectualSites/PlotSquared.git")
                         developerConnection.set("scm:git://github.com/IntellectualSites/PlotSquared.git")
                     }
-                }
-            }
-        }
 
-        repositories {
-            mavenLocal() // Install to own local repository
-
-            // Accept String? to not err if they're not present.
-            // Check that they both exist before adding the repo, such that
-            // `credentials` doesn't err if one is null.
-            // It's not pretty, but this way it can compile.
-            val nexusUsername: String? by project
-            val nexusPassword: String? by project
-            if (nexusUsername != null && nexusPassword != null) {
-                maven {
-                    val repositoryUrl = "https://mvn.intellectualsites.com/content/repositories/releases/"
-                    val snapshotRepositoryUrl = "https://mvn.intellectualsites.com/content/repositories/snapshots/"
-                    url = uri(
-                            if (version.toString().endsWith("-SNAPSHOT")) snapshotRepositoryUrl
-                            else repositoryUrl
-                    )
-
-                    credentials {
-                        username = nexusUsername
-                        password = nexusPassword
+                    issueManagement{
+                        system.set("GitHub")
+                        url.set("https://github.com/IntellectualSites/PlotSquared/issues")
                     }
                 }
-            } else {
-                logger.warn("No nexus repository is added; nexusUsername or nexusPassword is null.")
             }
         }
     }
@@ -177,7 +164,6 @@ allprojects {
     tasks {
         named<Delete>("clean") {
             doFirst {
-                rootDir.resolve("target").deleteRecursively()
                 javadocDir.deleteRecursively()
             }
         }
@@ -199,11 +185,6 @@ allprojects {
                     "implSpec:a:Implementation Requirements:",
                     "implNote:a:Implementation Note:"
             )
-            opt.destinationDirectory = javadocDir
-        }
-
-        jar {
-            this.archiveClassifier.set("jar")
         }
 
         shadowJar {
@@ -214,6 +195,19 @@ allprojects {
 
         named("build") {
             dependsOn(named("shadowJar"))
+        }
+        test {
+            useJUnitPlatform()
+        }
+    }
+
+}
+
+nexusPublishing {
+    repositories {
+        sonatype {
+            nexusUrl.set(URI.create("https://s01.oss.sonatype.org/service/local/"))
+            snapshotRepositoryUrl.set(URI.create("https://s01.oss.sonatype.org/content/repositories/snapshots/"))
         }
     }
 }

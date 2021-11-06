@@ -95,7 +95,8 @@ public abstract class PlotFlag<T, F extends PlotFlag<T, F>> {
      *
      * @return Non-nullable flag value
      */
-    public @NonNull final T getValue() {
+    public @NonNull
+    final T getValue() {
         return this.value;
     }
 
@@ -156,6 +157,15 @@ public abstract class PlotFlag<T, F extends PlotFlag<T, F>> {
      */
     public Caption getFlagCategory() {
         return this.flagCategory;
+    }
+
+    /**
+     * Get if the flag's permission should check for values. E.g. plots.flag.set.music.VALUE
+     *
+     * @return if valued permission
+     */
+    public boolean isValuedPermission() {
+        return true;
     }
 
     /**

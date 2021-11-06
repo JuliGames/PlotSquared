@@ -47,10 +47,10 @@ import com.sk89q.worldedit.function.pattern.Pattern;
 import com.sk89q.worldedit.world.item.ItemTypes;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import net.kyori.adventure.text.minimessage.Template;
-import org.checkerframework.checker.nullness.qual.NonNull;
-import org.checkerframework.checker.nullness.qual.Nullable;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.checkerframework.checker.nullness.qual.NonNull;
+import org.checkerframework.checker.nullness.qual.Nullable;
 
 import java.io.File;
 import java.io.IOException;
@@ -71,7 +71,6 @@ public class ComponentPresetManager {
     private static final Logger LOGGER = LogManager.getLogger("PlotSquared/" + ComponentPresetManager.class.getSimpleName());
 
     private final List<ComponentPreset> presets;
-    private final String guiName;
     private final EconHandler econHandler;
     private final InventoryUtil inventoryUtil;
     private File componentsFile;
@@ -104,15 +103,14 @@ public class ComponentPresetManager {
 
         final YamlConfiguration yamlConfiguration = YamlConfiguration.loadConfiguration(this.componentsFile);
 
-        if (!yamlConfiguration.contains("title")) {
-            yamlConfiguration.set("title", "&6Plot Components");
+        if (yamlConfiguration.contains("title")) {
+            yamlConfiguration.set("title", "#Now in /lang/messages_%.json, preset.title");
             try {
                 yamlConfiguration.save(this.componentsFile);
             } catch (IOException e) {
                 LOGGER.error("Failed to save default values to components.yml", e);
             }
         }
-        this.guiName = yamlConfiguration.getString("title", "&6Plot Components");
 
         if (yamlConfiguration.contains("presets")) {
             this.presets = yamlConfiguration
@@ -123,7 +121,8 @@ public class ComponentPresetManager {
                     .collect(Collectors.toList());
         } else {
             final List<ComponentPreset> defaultPreset = Collections.singletonList(
-                    new ComponentPreset(ClassicPlotManagerComponent.FLOOR,
+                    new ComponentPreset(
+                            ClassicPlotManagerComponent.FLOOR,
                             "##wool",
                             0,
                             "",
@@ -160,7 +159,10 @@ public class ComponentPresetManager {
         } else if (!plot.hasOwner()) {
             player.sendMessage(TranslatableCaption.of("info.plot_unowned"));
             return null;
-        } else if (!plot.isOwner(player.getUUID()) && !plot.getTrusted().contains(player.getUUID()) && !Permissions.hasPermission(player, Permission.PERMISSION_ADMIN_COMPONENTS_OTHER)) {
+        } else if (!plot.isOwner(player.getUUID()) && !plot.getTrusted().contains(player.getUUID()) && !Permissions.hasPermission(
+                player,
+                Permission.PERMISSION_ADMIN_COMPONENTS_OTHER
+        )) {
             player.sendMessage(TranslatableCaption.of("permission.no_plot_perms"));
             return null;
         } else if (plot.getVolume() > Integer.MAX_VALUE) {
@@ -179,7 +181,8 @@ public class ComponentPresetManager {
             allowedPresets.add(componentPreset);
         }
         final int size = (int) Math.ceil((double) allowedPresets.size() / 9.0D);
-        final PlotInventory plotInventory = new PlotInventory(this.inventoryUtil, player, size, this.guiName) {
+        final PlotInventory plotInventory = new PlotInventory(this.inventoryUtil, player, size,
+                TranslatableCaption.of("preset.title").getComponent(player)) {
             @Override
             public boolean onClick(final int index) {
                 if (!getPlayer().getCurrentPlot().equals(plot)) {

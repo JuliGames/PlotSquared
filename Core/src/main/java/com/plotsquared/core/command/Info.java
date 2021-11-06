@@ -155,13 +155,13 @@ public class Info extends SubCommand {
         }
 
         final List<Command> commands = completions.stream().filter(completion -> completion
-                .toLowerCase()
-                .startsWith(args[0].toLowerCase()))
+                        .toLowerCase()
+                        .startsWith(args[0].toLowerCase()))
                 .map(completion -> new Command(null, true, completion, "", RequiredType.PLAYER, CommandCategory.INFO) {
                 }).collect(Collectors.toCollection(LinkedList::new));
 
         if (Permissions.hasPermission(player, Permission.PERMISSION_AREA_INFO_FORCE) && args[0].length() > 0) {
-            commands.addAll(TabCompletions.completePlayers(args[0], Collections.emptyList()));
+            commands.addAll(TabCompletions.completePlayers(player, args[0], Collections.emptyList()));
         }
 
         return commands;

@@ -73,11 +73,11 @@ import com.plotsquared.core.util.task.TaskManager;
 import com.plotsquared.core.uuid.UUIDPipeline;
 import com.sk89q.worldedit.WorldEdit;
 import com.sk89q.worldedit.math.BlockVector2;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -135,8 +135,8 @@ public class PlotSquared {
             new UUIDPipeline(Executors.newSingleThreadExecutor());
     // Localization
     private final Map<String, CaptionMap> captionMaps = new HashMap<>();
-    private CaptionLoader captionLoader;
     public HashMap<String, HashMap<PlotId, Plot>> plots_tmp;
+    private CaptionLoader captionLoader;
     // WorldEdit instance
     private WorldEdit worldedit;
     private File configFile;
@@ -283,7 +283,7 @@ public class PlotSquared {
      * @return Plot area manager
      */
     public @NonNull PlotAreaManager getPlotAreaManager() {
-        return this.platform.injector().getInstance(PlotAreaManager.class);
+        return this.platform.plotAreaManager();
     }
 
     public void startExpiryTasks() {
@@ -339,7 +339,7 @@ public class PlotSquared {
     /**
      * Add a global reference to a plot world.
      *
-     * @param plotArea the {@code PlotArea} to add.
+     * @param plotArea the {@link PlotArea} to add.
      * @see #removePlotArea(PlotArea) To remove the reference
      */
     public void addPlotArea(final @NonNull PlotArea plotArea) {
@@ -429,7 +429,7 @@ public class PlotSquared {
     /**
      * Remove a plot world reference.
      *
-     * @param area the {@code PlotArea} to remove
+     * @param area the {@link PlotArea} to remove
      */
     public void removePlotArea(final @NonNull PlotArea area) {
         getPlotAreaManager().removePlotArea(area);
@@ -556,7 +556,7 @@ public class PlotSquared {
      *
      * @param input an array of plots to sort
      */
-    private void sortPlotsByHash(final @NonNull Plot @NonNull[] input) {
+    private void sortPlotsByHash(final @NonNull Plot @NonNull [] input) {
         List<Plot>[] bucket = new ArrayList[32];
         Arrays.fill(bucket, new ArrayList<>());
         boolean maxLength = false;

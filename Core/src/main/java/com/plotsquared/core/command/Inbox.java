@@ -150,7 +150,7 @@ public class Inbox extends SubCommand {
                                 if (total != 0) {
                                     player.sendMessage(
                                             TranslatableCaption.of("comment.inbox_item"),
-                                            Template.of("value", inbox.toString() + " (" + total + '/' + unread + ')')
+                                            Template.of("value", inbox + " (" + total + '/' + unread + ')')
                                     );
                                     return;
                                 }
@@ -179,7 +179,7 @@ public class Inbox extends SubCommand {
             return false;
         }
         final MetaDataKey<Long> metaDataKey = MetaDataKey.of(
-                String.format("inbox:%s", inbox.toString()),
+                String.format("inbox:%s", inbox),
                 new TypeLiteral<>() {
                 }
         );
@@ -302,16 +302,16 @@ public class Inbox extends SubCommand {
                 completions.add("report");
             }
             final List<Command> commands = completions.stream().filter(completion -> completion
-                    .toLowerCase()
-                    .startsWith(args[0].toLowerCase()))
+                            .toLowerCase()
+                            .startsWith(args[0].toLowerCase()))
                     .map(completion -> new Command(null, true, completion, "", RequiredType.PLAYER, CommandCategory.CHAT) {
                     }).collect(Collectors.toCollection(LinkedList::new));
             if (Permissions.hasPermission(player, Permission.PERMISSION_INBOX) && args[0].length() > 0) {
-                commands.addAll(TabCompletions.completePlayers(args[0], Collections.emptyList()));
+                commands.addAll(TabCompletions.completePlayers(player, args[0], Collections.emptyList()));
             }
             return commands;
         }
-        return TabCompletions.completePlayers(String.join(",", args).trim(), Collections.emptyList());
+        return TabCompletions.completePlayers(player, String.join(",", args).trim(), Collections.emptyList());
     }
 
 }

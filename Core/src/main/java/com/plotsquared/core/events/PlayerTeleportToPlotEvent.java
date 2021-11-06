@@ -35,7 +35,17 @@ import com.plotsquared.core.plot.Plot;
 public class PlayerTeleportToPlotEvent extends PlotPlayerEvent implements CancellablePlotEvent {
 
     private final Location from;
+    private final TeleportCause cause;
     private Result eventResult;
+
+    /**
+     * @deprecated use {@link PlayerTeleportToPlotEvent#PlayerTeleportToPlotEvent(PlotPlayer, Location, Plot, TeleportCause)}.
+     * You should not be creating events in the first place.
+     */
+    @Deprecated(forRemoval = true)
+    public PlayerTeleportToPlotEvent(PlotPlayer<?> player, Location from, Plot plot) {
+        this(player, from, plot, TeleportCause.UNKNOWN);
+    }
 
     /**
      * PlayerTeleportToPlotEvent: Called when a player teleports to a plot
@@ -43,10 +53,21 @@ public class PlayerTeleportToPlotEvent extends PlotPlayerEvent implements Cancel
      * @param player That was teleported
      * @param from   Start location
      * @param plot   Plot to which the player was teleported
+     * @param cause  Why the teleport is being completed
      */
-    public PlayerTeleportToPlotEvent(PlotPlayer<?> player, Location from, Plot plot) {
+    public PlayerTeleportToPlotEvent(PlotPlayer<?> player, Location from, Plot plot, TeleportCause cause) {
         super(player, plot);
         this.from = from;
+        this.cause = cause;
+    }
+
+    /**
+     * Get the teleport cause
+     *
+     * @return TeleportCause
+     */
+    public TeleportCause getCause() {
+        return cause;
     }
 
     /**

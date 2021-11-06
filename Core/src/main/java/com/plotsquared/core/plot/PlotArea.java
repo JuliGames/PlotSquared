@@ -41,6 +41,7 @@ import com.plotsquared.core.configuration.file.YamlConfiguration;
 import com.plotsquared.core.generator.GridPlotWorld;
 import com.plotsquared.core.generator.IndependentPlotGenerator;
 import com.plotsquared.core.inject.annotations.WorldConfig;
+import com.plotsquared.core.location.BlockLoc;
 import com.plotsquared.core.location.Direction;
 import com.plotsquared.core.location.Location;
 import com.plotsquared.core.location.PlotLoc;
@@ -70,10 +71,10 @@ import com.sk89q.worldedit.world.gamemode.GameModes;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import net.kyori.adventure.text.minimessage.Template;
-import org.checkerframework.checker.nullness.qual.NonNull;
-import org.checkerframework.checker.nullness.qual.Nullable;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.checkerframework.checker.nullness.qual.NonNull;
+import org.checkerframework.checker.nullness.qual.Nullable;
 
 import java.text.DecimalFormat;
 import java.util.ArrayList;
@@ -123,6 +124,7 @@ public abstract class PlotArea {
             new FlagContainer(GlobalFlagContainer.getInstance());
     private final YamlConfiguration worldConfiguration;
     private final GlobalBlockQueue globalBlockQueue;
+    private final boolean roadFlags = false;
     private boolean autoMerge = false;
     private boolean allowSigns = true;
     private boolean miscSpawnUnowned = false;
@@ -140,14 +142,13 @@ public abstract class PlotArea {
     private PlotAreaType type = PlotAreaType.NORMAL;
     private PlotAreaTerrainType terrain = PlotAreaTerrainType.NONE;
     private boolean homeAllowNonmember = false;
-    private PlotLoc nonmemberHome;
-    private PlotLoc defaultHome;
+    private BlockLoc nonmemberHome;
+    private BlockLoc defaultHome;
     private int maxBuildHeight = 256;
     private int minBuildHeight = 1;
     private GameMode gameMode = GameModes.CREATIVE;
     private Map<String, PlotExpression> prices = new HashMap<>();
     private List<String> schematics = new ArrayList<>();
-    private boolean roadFlags = false;
     private boolean worldBorder = false;
     private boolean useEconomy = false;
     private int hash;
@@ -291,9 +292,9 @@ public abstract class PlotArea {
     }
 
     /**
-     * Check if a PlotArea is compatible (move/copy etc).
+     * Check if a PlotArea is compatible (move/copy etc.).
      *
-     * @param plotArea the {@code PlotArea} to compare
+     * @param plotArea the {@link PlotArea} to compare
      * @return true if both areas are compatible
      */
     public boolean isCompatible(final @NonNull PlotArea plotArea) {
@@ -370,24 +371,24 @@ public abstract class PlotArea {
 
         String homeNonMembers = config.getString("home.nonmembers");
         String homeDefault = config.getString("home.default");
-        this.defaultHome = PlotLoc.fromString(homeDefault);
+        this.defaultHome = BlockLoc.fromString(homeDefault);
         this.homeAllowNonmember = homeNonMembers.equalsIgnoreCase(homeDefault);
         if (this.homeAllowNonmember) {
             this.nonmemberHome = defaultHome;
         } else {
-            this.nonmemberHome = PlotLoc.fromString(homeNonMembers);
+            this.nonmemberHome = BlockLoc.fromString(homeNonMembers);
         }
 
         if ("side".equalsIgnoreCase(homeDefault)) {
             this.defaultHome = null;
-        } else if (StringMan.isEqualIgnoreCaseToAny(homeDefault, "center", "middle")) {
-            this.defaultHome = new PlotLoc(Integer.MAX_VALUE, Integer.MAX_VALUE);
+        } else if (StringMan.isEqualIgnoreCaseToAny(homeDefault, "center", "middle", "centre")) {
+            this.defaultHome = new BlockLoc(Integer.MAX_VALUE, Integer.MIN_VALUE, Integer.MAX_VALUE);
         } else {
             try {
                 /*String[] split = homeDefault.split(",");
                 this.DEFAULT_HOME =
                     new PlotLoc(Integer.parseInt(split[0]), Integer.parseInt(split[1]));*/
-                this.defaultHome = PlotLoc.fromString(homeDefault);
+                this.defaultHome = BlockLoc.fromString(homeDefault);
             } catch (NumberFormatException ignored) {
                 this.defaultHome = null;
             }
@@ -408,13 +409,9 @@ public abstract class PlotArea {
             }
         }
         this.getFlagContainer().addAll(parseFlags(flags));
-
-        Component flagsComponent = null;
-        Collection<PlotFlag<?, ?>> flagCollection = this.getFlagContainer().getFlagMap().values();
-        flagsComponent = getFlagsComponent(flagsComponent, flagCollection);
         ConsolePlayer.getConsole().sendMessage(
                 TranslatableCaption.of("flags.area_flags"),
-                Template.of("flags", flagsComponent)
+                Template.of("flags", flags.toString())
         );
 
         this.spawnEggs = config.getBoolean("event.spawn.egg");
@@ -433,13 +430,9 @@ public abstract class PlotArea {
             }
         }
         this.getRoadFlagContainer().addAll(parseFlags(roadflags));
-
-        Component roadFlagsComponent = null;
-        Collection<PlotFlag<?, ?>> roadFlagCollection = this.getRoadFlagContainer().getFlagMap().values();
-        roadFlagsComponent = getFlagsComponent(roadFlagsComponent, roadFlagCollection);
         ConsolePlayer.getConsole().sendMessage(
                 TranslatableCaption.of("flags.road_flags"),
-                Template.of("flags", roadFlagsComponent)
+                Template.of("flags", roadflags.toString())
         );
 
         loadConfiguration(config);
@@ -578,10 +571,10 @@ public abstract class PlotArea {
     public abstract ConfigurationNode[] getSettingNodes();
 
     /**
-     * Gets the {@code Plot} at a location.
+     * Gets the {@link Plot} at a location.
      *
      * @param location the location
-     * @return the {@code Plot} or null if none exists
+     * @return the {@link Plot} or null if none exists
      */
     public @Nullable Plot getPlotAbs(final @NonNull Location location) {
         final PlotId pid =
@@ -641,7 +634,7 @@ public abstract class PlotArea {
     /**
      * Get the owned Plot at a PlotId.
      *
-     * @param id the {@code PlotId}
+     * @param id the {@link PlotId}
      * @return the plot or null
      */
     public @Nullable Plot getOwnedPlotAbs(final @NonNull PlotId id) {
@@ -686,7 +679,7 @@ public abstract class PlotArea {
     }
 
     /**
-     * A collection of the claimed plots in this {@code PlotArea}.
+     * A collection of the claimed plots in this {@link PlotArea}.
      *
      * @return a collection of claimed plots
      */
@@ -748,7 +741,7 @@ public abstract class PlotArea {
     }
 
     /**
-     * Retrieves the number of claimed plot in the {@code PlotArea}.
+     * Retrieves the number of claimed plot in the {@link PlotArea}.
      *
      * @return the number of claimed plots
      */
@@ -1312,8 +1305,8 @@ public abstract class PlotArea {
      *
      * @return the legacy sign material.
      * @deprecated Use {@link #signMaterial()}. This method is used for 1.13 only and
-     * will be removed without replacement in favor of {@link #signMaterial()}
-     * once we remove the support for 1.13.
+     *         will be removed without replacement in favor of {@link #signMaterial()}
+     *         once we remove the support for 1.13.
      */
     @Deprecated(forRemoval = true)
     public String getLegacySignMaterial() {
@@ -1359,15 +1352,38 @@ public abstract class PlotArea {
         return this.homeAllowNonmember;
     }
 
-    public PlotLoc getNonmemberHome() {
+    /**
+     * Get the location for non-members to be teleported to.
+     */
+    public BlockLoc nonmemberHome() {
         return this.nonmemberHome;
     }
 
-    public PlotLoc getDefaultHome() {
+    /**
+     * Get the default location for players to be teleported to. May be overriden by {@link #nonmemberHome} if the player is
+     * not a member of the plot.
+     */
+    public BlockLoc defaultHome() {
         return this.defaultHome;
     }
 
-    protected void setDefaultHome(PlotLoc defaultHome) {
+    /**
+     * @deprecated Use {@link #nonmemberHome}
+     */
+    @Deprecated(forRemoval = true)
+    public PlotLoc getNonmemberHome() {
+        return new PlotLoc(this.defaultHome.getX(), this.defaultHome.getY(), this.defaultHome.getZ());
+    }
+
+    /**
+     * @deprecated Use {@link #defaultHome}
+     */
+    @Deprecated(forRemoval = true)
+    public PlotLoc getDefaultHome() {
+        return new PlotLoc(this.defaultHome.getX(), this.defaultHome.getY(), this.defaultHome.getZ());
+    }
+
+    protected void setDefaultHome(BlockLoc defaultHome) {
         this.defaultHome = defaultHome;
     }
 

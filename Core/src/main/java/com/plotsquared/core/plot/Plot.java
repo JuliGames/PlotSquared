@@ -39,12 +39,12 @@ import com.plotsquared.core.configuration.caption.TranslatableCaption;
 import com.plotsquared.core.database.DBFunc;
 import com.plotsquared.core.events.Result;
 import com.plotsquared.core.events.TeleportCause;
+import com.plotsquared.core.generator.ClassicPlotWorld;
 import com.plotsquared.core.generator.HybridPlotWorld;
 import com.plotsquared.core.listener.PlotListener;
 import com.plotsquared.core.location.BlockLoc;
 import com.plotsquared.core.location.Direction;
 import com.plotsquared.core.location.Location;
-import com.plotsquared.core.location.PlotLoc;
 import com.plotsquared.core.permissions.Permission;
 import com.plotsquared.core.player.ConsolePlayer;
 import com.plotsquared.core.player.PlotPlayer;
@@ -80,11 +80,12 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import net.kyori.adventure.text.minimessage.Template;
-import org.checkerframework.checker.nullness.qual.NonNull;
-import org.checkerframework.checker.nullness.qual.Nullable;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.checkerframework.checker.nullness.qual.NonNull;
+import org.checkerframework.checker.nullness.qual.Nullable;
 
+import java.lang.ref.Cleaner;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayDeque;
@@ -127,6 +128,7 @@ public class Plot {
     private static final Logger LOGGER = LogManager.getLogger("PlotSquared/" + Plot.class.getSimpleName());
     private static final DecimalFormat FLAG_DECIMAL_FORMAT = new DecimalFormat("0");
     private static final MiniMessage MINI_MESSAGE = MiniMessage.builder().build();
+    private static final Cleaner CLEANER = Cleaner.create();
 
     static Set<Plot> connected_cache;
     static Set<CuboidRegion> regions_cache;
@@ -256,6 +258,9 @@ public class Plot {
         this.temp = temp;
         this.flagContainer.setParentContainer(area.getFlagContainer());
         PlotSquared.platform().injector().injectMembers(this);
+        // This is needed, because otherwise the Plot, the FlagContainer and its
+        // `this::handleUnknown` PlotFlagUpdateHandler won't get cleaned up ever
+        CLEANER.register(this, this.flagContainer.createCleanupHook());
     }
 
     /**
@@ -363,7 +368,7 @@ public class Plot {
             for (Plot p : plots) {
                 String name = p.getAlias();
                 if (!name.isEmpty() && name.equalsIgnoreCase(arg)) {
-                    return p;
+                    return p.getBasePlot(false);
                 }
             }
             if (message && player != null) {
@@ -527,7 +532,7 @@ public class Plot {
     /**
      * Efficiently get the players currently inside this plot<br>
      * - Will return an empty list if no players are in the plot<br>
-     * - Remember, you can cast a PlotPlayer to it's respective implementation (BukkitPlayer, SpongePlayer) to obtain the player object
+     * - Remember, you can cast a PlotPlayer to its respective implementation (BukkitPlayer, SpongePlayer) to obtain the player object
      *
      * @return list of PlotPlayer(s) or an empty list
      */
@@ -1296,7 +1301,8 @@ public class Plot {
         Location[] corners = getCorners();
         Location top = corners[0];
         Location bot = corners[1];
-        Location location = Location.at(this.getWorldName(),
+        Location location = Location.at(
+                this.getWorldName(),
                 MathMan.average(bot.getX(), top.getX()),
                 MathMan.average(bot.getY(), top.getY()),
                 MathMan.average(bot.getZ(), top.getZ())
@@ -1323,11 +1329,12 @@ public class Plot {
             return Location.at(
                     "",
                     0,
-                    this.getArea() instanceof HybridPlotWorld ? ((HybridPlotWorld) this.getArea()).PLOT_HEIGHT + 1 : 4,
+                    this.getArea() instanceof ClassicPlotWorld ? ((ClassicPlotWorld) this.getArea()).PLOT_HEIGHT + 1 : 4,
                     0
             );
         }
-        Location location = Location.at(this.getWorldName(),
+        Location location = Location.at(
+                this.getWorldName(),
                 MathMan.average(bot.getX(), top.getX()),
                 MathMan.average(bot.getY(), top.getY()),
                 MathMan.average(bot.getZ(), top.getZ())
@@ -1397,12 +1404,13 @@ public class Plot {
                 return Location.at(
                         "",
                         0,
-                        this.getArea() instanceof HybridPlotWorld ? ((HybridPlotWorld) this.getArea()).PLOT_HEIGHT + 1 : 4,
+                        this.getArea() instanceof ClassicPlotWorld ? ((ClassicPlotWorld) this.getArea()).PLOT_HEIGHT + 1 : 4,
                         0
                 );
             }
             Location location = Location
-                    .at(bottom.getWorldName(),
+                    .at(
+                            bottom.getWorldName(),
                             bottom.getX() + home.getX(),
                             bottom.getY() + home.getY(),
                             bottom.getZ() + home.getZ(),
@@ -1435,14 +1443,15 @@ public class Plot {
                 result.accept(Location.at(
                         "",
                         0,
-                        this.getArea() instanceof HybridPlotWorld ? ((HybridPlotWorld) this.getArea()).PLOT_HEIGHT + 1 : 4,
+                        this.getArea() instanceof ClassicPlotWorld ? ((ClassicPlotWorld) this.getArea()).PLOT_HEIGHT + 1 : 4,
                         0
                 ));
                 return;
             }
             Location bottom = this.getBottomAbs();
             Location location = Location
-                    .at(bottom.getWorldName(),
+                    .at(
+                            bottom.getWorldName(),
                             bottom.getX() + home.getX(),
                             bottom.getY() + home.getY(),
                             bottom.getZ() + home.getZ(),
@@ -1468,7 +1477,7 @@ public class Plot {
      */
     public void setHome(BlockLoc location) {
         Plot plot = this.getBasePlot(false);
-        if (location != null && new BlockLoc(0, 0, 0).equals(location)) {
+        if (BlockLoc.ZERO.equals(location) || BlockLoc.MINY.equals(location)) {
             return;
         }
         plot.getSettings().setPosition(location);
@@ -1497,7 +1506,7 @@ public class Plot {
     @Deprecated
     public Location getDefaultHomeSynchronous(final boolean member) {
         Plot plot = this.getBasePlot(false);
-        PlotLoc loc = member ? area.getDefaultHome() : area.getNonmemberHome();
+        BlockLoc loc = member ? area.defaultHome() : area.nonmemberHome();
         if (loc != null) {
             int x;
             int z;
@@ -1516,10 +1525,10 @@ public class Plot {
                 x = bot.getX() + loc.getX();
                 z = bot.getZ() + loc.getZ();
             }
-            int y = loc.getY() < 1
+            int y = loc.getY() == Integer.MIN_VALUE
                     ? (isLoaded() ? this.worldUtil.getHighestBlockSynchronous(plot.getWorldName(), x, z) + 1 : 63)
                     : loc.getY();
-            return Location.at(plot.getWorldName(), x, y, z);
+            return Location.at(plot.getWorldName(), x, y, z, loc.getYaw(), loc.getPitch());
         }
         // Side
         return plot.getSideSynchronous();
@@ -1531,12 +1540,12 @@ public class Plot {
             result.accept(Location.at(
                     "",
                     0,
-                    this.getArea() instanceof HybridPlotWorld ? ((HybridPlotWorld) this.getArea()).PLOT_HEIGHT + 1 : 4,
+                    this.getArea() instanceof ClassicPlotWorld ? ((ClassicPlotWorld) this.getArea()).PLOT_HEIGHT + 1 : 4,
                     0
             ));
             return;
         }
-        PlotLoc loc = member ? area.getDefaultHome() : area.getNonmemberHome();
+        BlockLoc loc = member ? area.defaultHome() : area.nonmemberHome();
         if (loc != null) {
             int x;
             int z;
@@ -1555,7 +1564,7 @@ public class Plot {
                 x = bot.getX() + loc.getX();
                 z = bot.getZ() + loc.getZ();
             }
-            if (loc.getY() < 1) {
+            if (loc.getY()  == Integer.MIN_VALUE) {
                 if (isLoaded()) {
                     this.worldUtil.getHighestBlock(
                             plot.getWorldName(),
@@ -1564,10 +1573,11 @@ public class Plot {
                             y -> result.accept(Location.at(plot.getWorldName(), x, y + 1, z))
                     );
                 } else {
-                    result.accept(Location.at(plot.getWorldName(), x, 63, z));
+                    int y = this.getArea() instanceof ClassicPlotWorld ? ((ClassicPlotWorld) this.getArea()).PLOT_HEIGHT + 1 : 63;
+                    result.accept(Location.at(plot.getWorldName(), x, y, z, loc.getYaw(), loc.getPitch()));
                 }
             } else {
-                result.accept(Location.at(plot.getWorldName(), x, loc.getY(), z));
+                result.accept(Location.at(plot.getWorldName(), x, loc.getY(), z, loc.getYaw(), loc.getPitch()));
             }
             return;
         }
@@ -1657,6 +1667,7 @@ public class Plot {
         return base.settings != null && base.settings.getRatings() != null;
     }
 
+    @Deprecated(forRemoval = true)
     public boolean claim(final @NonNull PlotPlayer<?> player, boolean teleport, String schematic) {
         if (!canClaim(player)) {
             return false;
@@ -1664,8 +1675,26 @@ public class Plot {
         return claim(player, teleport, schematic, true);
     }
 
+    @Deprecated(forRemoval = true)
     public boolean claim(final @NonNull PlotPlayer<?> player, boolean teleport, String schematic, boolean updateDB) {
+        return claim(player, teleport, schematic, updateDB, false);
+    }
 
+    /**
+     * Claim the plot
+     *
+     * @param player    The player to set the owner to
+     * @param teleport  If the player should be teleported
+     * @param schematic The schematic name to paste on the plot
+     * @param updateDB  If the database should be updated
+     * @param auto      If the plot is being claimed by a /plot auto
+     * @return success
+     */
+    public boolean claim(
+            final @NonNull PlotPlayer<?> player, boolean teleport, String schematic, boolean updateDB,
+            boolean auto
+    ) {
+        this.eventDispatcher.callPlotClaimedNotify(this, auto);
         if (updateDB) {
             if (!this.getPlotModificationManager().create(player.getUUID(), true)) {
                 LOGGER.error("Player {} attempted to claim plot {}, but the database failed to update", player.getName(),
@@ -1680,7 +1709,7 @@ public class Plot {
         this.getPlotModificationManager().setSign(player.getName());
         player.sendMessage(TranslatableCaption.of("working.claimed"), Template.of("plot", this.getId().toString()));
         if (teleport && Settings.Teleport.ON_CLAIM) {
-            teleportPlayer(player, TeleportCause.COMMAND, result -> {
+            teleportPlayer(player, auto ? TeleportCause.COMMAND_AUTO : TeleportCause.COMMAND_CLAIM, result -> {
             });
         }
         PlotArea plotworld = getArea();
@@ -1893,7 +1922,7 @@ public class Plot {
         if (this.settings != null && this.settings.getAlias().length() > 1) {
             return this.settings.getAlias();
         }
-        return this.area + ";" + this.id.toString();
+        return this.area + ";" + this.id;
     }
 
     /**
@@ -2120,8 +2149,9 @@ public class Plot {
     }
 
     /**
-     * Gets the set home location or 0,0,0 if no location is set<br>
+     * Gets the set home location or 0,Integer#MIN_VALUE,0 if no location is set<br>
      * - Does not take the default home location into account
+     * - PlotSquared will internally find the correct place to teleport to if y = Integer#MIN_VALUE when teleporting to the plot.
      *
      * @return home location
      */
@@ -2561,7 +2591,7 @@ public class Plot {
      */
     public void teleportPlayer(final PlotPlayer<?> player, TeleportCause cause, Consumer<Boolean> resultConsumer) {
         Plot plot = this.getBasePlot(false);
-        Result result = this.eventDispatcher.callTeleport(player, player.getLocation(), plot).getEventResult();
+        Result result = this.eventDispatcher.callTeleport(player, player.getLocation(), plot, cause).getEventResult();
         if (result == Result.DENY) {
             player.sendMessage(
                     TranslatableCaption.of("events.event_denied"),
@@ -2785,9 +2815,6 @@ public class Plot {
                     String description = this.getFlag(DescriptionFlag.class);
                     if (description.isEmpty()) {
                         description = TranslatableCaption.of("info.plot_no_description").getComponent(player);
-                    } else if (Settings.Chat.REMOVE_USER_DEFINED_CLICK_EVENTS) {
-                        description = description.replaceAll(".([c-lC-L]{5}):([a-uA-U_]{11}):[^\\/]*[^>]*>", "").replace("</click>",
-                                "");
                     }
 
                     Component flags;
@@ -2804,9 +2831,10 @@ public class Plot {
                             } else {
                                 value = flag.toString();
                             }
-                            Component snip = MINI_MESSAGE.parse(prefix + CaptionUtility.format(
-                                    player,
-                                    TranslatableCaption.of("info.plot_flag_list").getComponent(player)
+                            Component snip = MINI_MESSAGE.parse(
+                                    prefix + CaptionUtility.format(
+                                            player,
+                                            TranslatableCaption.of("info.plot_flag_list").getComponent(player)
                                     ),
                                     Template.of("flag", flag.getName()),
                                     Template.of("value", CaptionUtility.formatRaw(player, value.toString()))
@@ -2903,7 +2931,8 @@ public class Plot {
                                 }
                             }
                             future.complete(StaticCaption.of(MINI_MESSAGE.serialize(MINI_MESSAGE
-                                    .parse(iInfo.getComponent(player),
+                                    .parse(
+                                            iInfo.getComponent(player),
                                             headerTemplate,
                                             areaTemplate,
                                             idTemplate,
@@ -2928,7 +2957,8 @@ public class Plot {
                         return;
                     }
                     future.complete(StaticCaption.of(MINI_MESSAGE.serialize(MINI_MESSAGE
-                            .parse(iInfo.getComponent(player),
+                            .parse(
+                                    iInfo.getComponent(player),
                                     headerTemplate,
                                     areaTemplate,
                                     idTemplate,

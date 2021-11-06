@@ -101,6 +101,7 @@ import org.bukkit.event.block.BlockSpreadEvent;
 import org.bukkit.event.block.CauldronLevelChangeEvent;
 import org.bukkit.event.block.EntityBlockFormEvent;
 import org.bukkit.event.block.LeavesDecayEvent;
+import org.bukkit.event.block.SpongeAbsorbEvent;
 import org.bukkit.event.world.StructureGrowEvent;
 import org.bukkit.material.Directional;
 import org.bukkit.projectiles.BlockProjectileSource;
@@ -317,8 +318,7 @@ public class BlockEventListener implements Listener {
             } else if (Settings.Done.RESTRICT_BUILDING && DoneFlag.isDone(plot)) {
                 if (!Permissions.hasPermission(pp, Permission.PERMISSION_ADMIN_BUILD_OTHER)) {
                     pp.sendMessage(
-                            TranslatableCaption.of("permission.no_permission_event"),
-                            Template.of("node", String.valueOf(Permission.PERMISSION_ADMIN_BUILD_OTHER))
+                            TranslatableCaption.of("done.building_restricted")
                     );
                     event.setCancelled(true);
                     return;
@@ -400,8 +400,7 @@ public class BlockEventListener implements Listener {
             } else if (Settings.Done.RESTRICT_BUILDING && DoneFlag.isDone(plot)) {
                 if (!Permissions.hasPermission(plotPlayer, Permission.PERMISSION_ADMIN_BUILD_OTHER)) {
                     plotPlayer.sendMessage(
-                            TranslatableCaption.of("permission.no_permission_event"),
-                            Template.of("node", String.valueOf(Permission.PERMISSION_ADMIN_DESTROY_OTHER))
+                            TranslatableCaption.of("done.building_restricted")
                     );
                     event.setCancelled(true);
                     return;
@@ -1181,6 +1180,32 @@ public class BlockEventListener implements Listener {
             event.setCancelled(true);
         }
 
+    }
+
+    @EventHandler(ignoreCancelled = true)
+    public void onSpongeAbsorb(SpongeAbsorbEvent event) {
+        Block sponge = event.getBlock();
+        Location location = BukkitUtil.adapt(sponge.getLocation());
+        PlotArea area = location.getPlotArea();
+        List<org.bukkit.block.BlockState> blocks = event.getBlocks();
+        if (area == null) {
+            blocks.removeIf(block -> BukkitUtil.adapt(block.getLocation()).isPlotArea());
+        } else {
+            Plot origin = area.getOwnedPlot(location);
+            blocks.removeIf(block -> {
+                Location blockLocation = BukkitUtil.adapt(block.getLocation());
+                if (!area.contains(blockLocation.getX(), blockLocation.getZ())) {
+                    return true;
+                }
+                Plot plot = area.getOwnedPlot(blockLocation);
+                return !Objects.equals(plot, origin);
+            });
+        }
+        if (blocks.isEmpty()) {
+            // Cancel event so the sponge block doesn't turn into a wet sponge
+            // if no water is being absorbed
+            event.setCancelled(true);
+        }
     }
 
 }

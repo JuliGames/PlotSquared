@@ -30,6 +30,7 @@ import com.plotsquared.core.PlotSquared;
 import com.plotsquared.core.configuration.ConfigurationSection;
 import com.plotsquared.core.configuration.Settings;
 import com.plotsquared.core.configuration.Storage;
+import com.plotsquared.core.configuration.caption.CaptionUtility;
 import com.plotsquared.core.configuration.file.YamlConfiguration;
 import com.plotsquared.core.inject.annotations.WorldConfig;
 import com.plotsquared.core.listener.PlotListener;
@@ -50,9 +51,9 @@ import com.plotsquared.core.util.HashUtil;
 import com.plotsquared.core.util.StringMan;
 import com.plotsquared.core.util.task.RunnableVal;
 import com.plotsquared.core.util.task.TaskManager;
-import org.checkerframework.checker.nullness.qual.NonNull;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.checkerframework.checker.nullness.qual.NonNull;
 
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
@@ -1935,7 +1936,7 @@ public class SQLManager implements AbstractDB {
                             } else if (Settings.Enabled_Components.DATABASE_PURGER) {
                                 toDelete.add(id);
                             } else {
-                                LOGGER.info("Entry #{}({}) in `plot_rating` does not exist."
+                                LOGGER.warn("Entry #{}({}) in `plot_rating` does not exist."
                                         + " Create this plot or set `database-purger: true` in settings.yml", id, plot);
                             }
                         }
@@ -1963,7 +1964,7 @@ public class SQLManager implements AbstractDB {
                         } else if (Settings.Enabled_Components.DATABASE_PURGER) {
                             toDelete.add(id);
                         } else {
-                            LOGGER.info("Entry #{}({}) in `plot_helpers` does not exist."
+                            LOGGER.warn("Entry #{}({}) in `plot_helpers` does not exist."
                                     + " Create this plot or set `database-purger: true` in settings.yml", id, plot);
                         }
                     }
@@ -1990,7 +1991,7 @@ public class SQLManager implements AbstractDB {
                         } else if (Settings.Enabled_Components.DATABASE_PURGER) {
                             toDelete.add(id);
                         } else {
-                            LOGGER.info("Entry #{}({}) in `plot_trusted` does not exist."
+                            LOGGER.warn("Entry #{}({}) in `plot_trusted` does not exist."
                                     + " Create this plot or set `database-purger: true` in settings.yml", id, plot);
                         }
                     }
@@ -2017,7 +2018,7 @@ public class SQLManager implements AbstractDB {
                         } else if (Settings.Enabled_Components.DATABASE_PURGER) {
                             toDelete.add(id);
                         } else {
-                            LOGGER.info("Entry #{}({}) in `plot_denied` does not exist."
+                            LOGGER.warn("Entry #{}({}) in `plot_denied` does not exist."
                                     + " Create this plot or set `database-purger: true` in settings.yml", id, plot);
                         }
                     }
@@ -2033,7 +2034,7 @@ public class SQLManager implements AbstractDB {
                     while (resultSet.next()) {
                         id = resultSet.getInt("plot_id");
                         final String flag = resultSet.getString("flag");
-                        final String value = resultSet.getString("value");
+                        String value = resultSet.getString("value");
                         final Plot plot = plots.get(id);
                         if (plot != null) {
                             final PlotFlag<?, ?> plotFlag =
@@ -2041,6 +2042,7 @@ public class SQLManager implements AbstractDB {
                             if (plotFlag == null) {
                                 plot.getFlagContainer().addUnknownFlag(flag, value);
                             } else {
+                                value = CaptionUtility.stripClickEvents(plotFlag, value);
                                 try {
                                     plot.getFlagContainer().addFlag(plotFlag.parse(value));
                                 } catch (final FlagParseException e) {
@@ -2058,7 +2060,7 @@ public class SQLManager implements AbstractDB {
                         } else if (Settings.Enabled_Components.DATABASE_PURGER) {
                             toDelete.add(id);
                         } else {
-                            LOGGER.info("Entry #{}({}) in `plot_flags` does not exist."
+                            LOGGER.warn("Entry #{}({}) in `plot_flags` does not exist."
                                     + " Create this plot or set `database-purger: true` in settings.yml", id, plot);
                         }
                     }
@@ -2097,6 +2099,7 @@ public class SQLManager implements AbstractDB {
                                 case "default":
                                 case "0,0,0":
                                 case "center":
+                                case "centre":
                                     break;
                                 default:
                                     try {
@@ -2113,7 +2116,7 @@ public class SQLManager implements AbstractDB {
                         } else if (Settings.Enabled_Components.DATABASE_PURGER) {
                             toDelete.add(id);
                         } else {
-                            LOGGER.info("Entry #{}({}) in `plot_settings` does not exist."
+                            LOGGER.warn("Entry #{}({}) in `plot_settings` does not exist."
                                     + " Create this plot or set `database-purger: true` in settings.yml", id, plot);
                         }
                     }
@@ -2944,6 +2947,7 @@ public class SQLManager implements AbstractDB {
                             case "default":
                             case "0,0,0":
                             case "center":
+                            case "centre":
                                 break;
                             default:
                                 try {
@@ -3388,22 +3392,19 @@ public class SQLManager implements AbstractDB {
                                 .toString() + "' WHERE `owner` = '" + old.toString() + '\'');
                 stmt.executeUpdate(
                         "UPDATE `" + SQLManager.this.prefix + "cluster_helpers` SET `user_uuid` = '"
-                                + now.toString() + "' WHERE `user_uuid` = '" + old.toString() + '\'');
+                                + now + "' WHERE `user_uuid` = '" + old + '\'');
                 stmt.executeUpdate(
                         "UPDATE `" + SQLManager.this.prefix + "cluster_invited` SET `user_uuid` = '"
-                                + now.toString() + "' WHERE `user_uuid` = '" + old.toString() + '\'');
+                                + now + "' WHERE `user_uuid` = '" + old + '\'');
                 stmt.executeUpdate(
-                        "UPDATE `" + SQLManager.this.prefix + "plot` SET `owner` = '" + now.toString()
-                                + "' WHERE `owner` = '" + old.toString() + '\'');
+                        "UPDATE `" + SQLManager.this.prefix + "plot` SET `owner` = '" + now
+                                + "' WHERE `owner` = '" + old + '\'');
                 stmt.executeUpdate(
-                        "UPDATE `" + SQLManager.this.prefix + "plot_denied` SET `user_uuid` = '" + now
-                                .toString() + "' WHERE `user_uuid` = '" + old.toString() + '\'');
+                        "UPDATE `" + SQLManager.this.prefix + "plot_denied` SET `user_uuid` = '" + now + "' WHERE `user_uuid` = '" + old + '\'');
                 stmt.executeUpdate(
-                        "UPDATE `" + SQLManager.this.prefix + "plot_helpers` SET `user_uuid` = '" + now
-                                .toString() + "' WHERE `user_uuid` = '" + old.toString() + '\'');
+                        "UPDATE `" + SQLManager.this.prefix + "plot_helpers` SET `user_uuid` = '" + now + "' WHERE `user_uuid` = '" + old + '\'');
                 stmt.executeUpdate(
-                        "UPDATE `" + SQLManager.this.prefix + "plot_trusted` SET `user_uuid` = '" + now
-                                .toString() + "' WHERE `user_uuid` = '" + old.toString() + '\'');
+                        "UPDATE `" + SQLManager.this.prefix + "plot_trusted` SET `user_uuid` = '" + now + "' WHERE `user_uuid` = '" + old + '\'');
             } catch (SQLException e) {
                 e.printStackTrace();
             }

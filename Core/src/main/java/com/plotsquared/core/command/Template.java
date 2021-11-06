@@ -240,7 +240,7 @@ public class Template extends SubCommand {
 
                 this.setupUtils.setupWorld(builder);
                 TaskManager.runTask(() -> {
-                    player.teleport(this.worldUtil.getSpawn(world), TeleportCause.COMMAND);
+                    player.teleport(this.worldUtil.getSpawn(world), TeleportCause.COMMAND_TEMPLATE);
                     player.sendMessage(TranslatableCaption.of("setup.setup_finished"));
                 });
                 return true;
@@ -293,8 +293,8 @@ public class Template extends SubCommand {
                 completions.add("import");
             }
             final List<Command> commands = completions.stream().filter(completion -> completion
-                    .toLowerCase()
-                    .startsWith(args[0].toLowerCase()))
+                            .toLowerCase()
+                            .startsWith(args[0].toLowerCase()))
                     .map(completion -> new Command(
                             null,
                             true,
@@ -305,11 +305,11 @@ public class Template extends SubCommand {
                     ) {
                     }).collect(Collectors.toCollection(LinkedList::new));
             if (Permissions.hasPermission(player, Permission.PERMISSION_TEMPLATE) && args[0].length() > 0) {
-                commands.addAll(TabCompletions.completePlayers(args[0], Collections.emptyList()));
+                commands.addAll(TabCompletions.completePlayers(player, args[0], Collections.emptyList()));
             }
             return commands;
         }
-        return TabCompletions.completePlayers(String.join(",", args).trim(), Collections.emptyList());
+        return TabCompletions.completePlayers(player, String.join(",", args).trim(), Collections.emptyList());
     }
 
 }

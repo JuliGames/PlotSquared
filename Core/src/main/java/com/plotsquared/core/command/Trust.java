@@ -138,7 +138,7 @@ public class Trust extends Command {
                 checkTrue(!uuids.isEmpty(), null);
                 int localTrustSize = currentPlot.getTrusted().size();
                 int maxTrustSize = Permissions.hasPermissionRange(player, Permission.PERMISSION_TRUST, Settings.Limit.MAX_PLOTS);
-                if (localTrustSize > maxTrustSize) {
+                if (localTrustSize >= maxTrustSize) {
                     player.sendMessage(
                             TranslatableCaption.of("members.plot_max_members_trusted"),
                             Template.of("amount", String.valueOf(localTrustSize))
@@ -168,7 +168,7 @@ public class Trust extends Command {
 
     @Override
     public Collection<Command> tab(final PlotPlayer<?> player, final String[] args, final boolean space) {
-        return TabCompletions.completePlayers(String.join(",", args).trim(), Collections.emptyList());
+        return TabCompletions.completePlayers(player, String.join(",", args).trim(), Collections.emptyList());
     }
 
 }

@@ -85,7 +85,7 @@ public class HomeCommand extends Command {
             return;
         }
         Plot plot = plots.get(page - 1);
-        confirm.run(this, () -> plot.teleportPlayer(player, TeleportCause.COMMAND, result -> {
+        confirm.run(this, () -> plot.teleportPlayer(player, TeleportCause.COMMAND_HOME, result -> {
             if (result) {
                 whenDone.run(this, CommandResult.SUCCESS);
             } else {
@@ -212,8 +212,10 @@ public class HomeCommand extends Command {
     }
 
     private void sortBySettings(PlotQuery plotQuery, PlotPlayer<?> player) {
-        if (Settings.Teleport.PER_WORLD_VISIT) {
-            plotQuery.relativeToArea(player.getApplicablePlotArea())
+        // Player may not be in a plot world when attempting to get to a plot home
+        PlotArea area = player.getApplicablePlotArea();
+        if (Settings.Teleport.PER_WORLD_VISIT && area != null) {
+            plotQuery.relativeToArea(area)
                     .withSortingStrategy(SortingStrategy.SORT_BY_CREATION);
         } else {
             plotQuery.withSortingStrategy(SortingStrategy.SORT_BY_TEMP);

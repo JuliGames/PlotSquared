@@ -166,7 +166,6 @@ public class EntityEventListener implements Listener {
             case "PATROL":
             case "RAID":
             case "SHEARED":
-            case "SHOULDER_ENTITY":
             case "SILVERFISH_BLOCK":
             case "TRAP":
             case "VILLAGE_DEFENSE":
@@ -350,7 +349,8 @@ public class EntityEventListener implements Listener {
                 // trampling farmland
                 BlockType blockType = BukkitAdapter.asBlockType(type);
                 if (!this.eventDispatcher.checkPlayerBlockEvent(pp,
-                        PlayerBlockEventType.TRIGGER_PHYSICAL, location, blockType, true)) {
+                        PlayerBlockEventType.TRIGGER_PHYSICAL, location, blockType, true
+                )) {
                     event.setCancelled(true);
                 }
                 return;

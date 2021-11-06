@@ -197,6 +197,15 @@ public abstract class PlotPlayer<P> implements CommandCaller, OfflinePlotPlayer,
         return this.permissionProfile.hasPermission(world, permission);
     }
 
+    @Override
+    public final boolean hasKeyedPermission(
+            final @Nullable String world,
+            final @NonNull String permission,
+            final @NonNull String key
+    ) {
+        return this.permissionProfile.hasKeyedPermission(world, permission, key);
+    }
+
     public abstract Actor toActor();
 
     public abstract P getPlatformPlayer();
@@ -365,9 +374,9 @@ public abstract class PlotPlayer<P> implements CommandCaller, OfflinePlotPlayer,
     }
 
     /**
-     * Get a {@code Set} of plots owned by this player.
+     * Get a {@link Set} of plots owned by this player.
      *
-     * @return a {@code Set} of plots owned by the player
+     * @return a {@link Set} of plots owned by the player
      * @see PlotSquared for more searching functions
      * @see #getPlotCount() for the number of plots
      */
@@ -428,16 +437,14 @@ public abstract class PlotPlayer<P> implements CommandCaller, OfflinePlotPlayer,
      * @return UUID
      */
     @Override
-    public @NonNull abstract UUID getUUID();
+    public @NonNull
+    abstract UUID getUUID();
 
     public boolean canTeleport(final @NonNull Location location) {
         Preconditions.checkNotNull(location, "Specified location cannot be null");
         final Location current = getLocationFull();
         teleport(location);
-        boolean result = true;
-        if (!getLocation().equals(location)) {
-            result = false;
-        }
+        boolean result = getLocation().equals(location);
         teleport(current);
         return result;
     }
@@ -466,7 +473,7 @@ public abstract class PlotPlayer<P> implements CommandCaller, OfflinePlotPlayer,
      */
     public void plotkick(Location location) {
         setMeta("kick", true);
-        teleport(location);
+        teleport(location, TeleportCause.KICK);
         deleteMeta("kick");
     }
 
@@ -705,7 +712,7 @@ public abstract class PlotPlayer<P> implements CommandCaller, OfflinePlotPlayer,
                         if (plot.isLoaded()) {
                             TaskManager.runTask(() -> {
                                 if (getMeta("teleportOnLogin", true)) {
-                                    teleport(location);
+                                    teleport(location, TeleportCause.LOGIN);
                                     sendMessage(
                                             TranslatableCaption.of("teleport.teleported_to_plot"));
                                 }
@@ -717,7 +724,7 @@ public abstract class PlotPlayer<P> implements CommandCaller, OfflinePlotPlayer,
                                         result -> TaskManager.runTask(() -> {
                                             if (getMeta("teleportOnLogin", true)) {
                                                 if (plot.isLoaded()) {
-                                                    teleport(location);
+                                                    teleport(location, TeleportCause.LOGIN);
                                                     sendMessage(TranslatableCaption
                                                             .of("teleport.teleported_to_plot"));
                                                 }
@@ -794,7 +801,7 @@ public abstract class PlotPlayer<P> implements CommandCaller, OfflinePlotPlayer,
         } else if (key.getType().getRawType().equals(Boolean.class)) {
             this.setPersistentMeta(key.toString(), ByteArrayUtilities.booleanToBytes((boolean) rawValue));
         } else {
-            throw new IllegalArgumentException(String.format("Unknown meta data type '%s'", key.getType().toString()));
+            throw new IllegalArgumentException(String.format("Unknown meta data type '%s'", key.getType()));
         }
     }
 
@@ -809,7 +816,7 @@ public abstract class PlotPlayer<P> implements CommandCaller, OfflinePlotPlayer,
         } else if (key.getType().getRawType().equals(Boolean.class)) {
             returnValue = ByteArrayUtilities.bytesToBoolean(value);
         } else {
-            throw new IllegalArgumentException(String.format("Unknown meta data type '%s'", key.getType().toString()));
+            throw new IllegalArgumentException(String.format("Unknown meta data type '%s'", key.getType()));
         }
         return (T) returnValue;
     }
@@ -834,7 +841,14 @@ public abstract class PlotPlayer<P> implements CommandCaller, OfflinePlotPlayer,
             final @NonNull Caption title, final @NonNull Caption subtitle,
             final @NonNull Template... replacements
     ) {
-        sendTitle(title, subtitle, Settings.Titles.TITLES_FADE_IN, Settings.Titles.TITLES_STAY, Settings.Titles.TITLES_FADE_OUT, replacements);
+        sendTitle(
+                title,
+                subtitle,
+                Settings.Titles.TITLES_FADE_IN,
+                Settings.Titles.TITLES_STAY,
+                Settings.Titles.TITLES_FADE_OUT,
+                replacements
+        );
     }
 
     /**
@@ -867,7 +881,7 @@ public abstract class PlotPlayer<P> implements CommandCaller, OfflinePlotPlayer,
     /**
      * Method designed to send an ActionBar to a player.
      *
-     * @param caption Caption
+     * @param caption      Caption
      * @param replacements Variable replacements
      */
     public void sendActionBar(
@@ -992,7 +1006,8 @@ public abstract class PlotPlayer<P> implements CommandCaller, OfflinePlotPlayer,
      *
      * @return Player audience
      */
-    public @NonNull abstract Audience getAudience();
+    public @NonNull
+    abstract Audience getAudience();
 
     /**
      * Get this player's {@link LockRepository}

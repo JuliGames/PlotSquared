@@ -26,10 +26,10 @@
 package com.plotsquared.core.plot.flag.implementations;
 
 import com.plotsquared.core.configuration.caption.TranslatableCaption;
-import com.plotsquared.core.plot.flag.PlotFlag;
+import com.plotsquared.core.plot.flag.types.StringFlag;
 import org.checkerframework.checker.nullness.qual.NonNull;
 
-public class GreetingFlag extends PlotFlag<String, GreetingFlag> {
+public class GreetingFlag extends StringFlag<GreetingFlag> {
 
     public static final GreetingFlag GREETING_FLAG_EMPTY = new GreetingFlag("");
 

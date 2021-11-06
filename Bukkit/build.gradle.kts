@@ -24,7 +24,7 @@ dependencies {
     implementation(libs.bstats)
 
     // Paper
-    compileOnlyApi(libs.paper)
+    compileOnly(libs.paper)
     implementation(libs.paperlib)
 
     // Plugins
@@ -32,8 +32,8 @@ dependencies {
         exclude(group = "org.bukkit")
         exclude(group = "org.spigotmc")
     }
-    compileOnlyApi(libs.fastasyncworldeditBukkit)
-    testImplementation(libs.fastasyncworldeditBukkit)
+    compileOnly(libs.fastasyncworldeditBukkit) { isTransitive = false }
+    testImplementation(libs.fastasyncworldeditBukkit) { isTransitive = false }
     compileOnly(libs.vault) {
         exclude(group = "org.bukkit")
     }
@@ -53,7 +53,7 @@ dependencies {
     implementation(libs.paster)
 
     // Adventure
-    implementation(libs.platform)
+    implementation(libs.adventurePlatformBukkit)
 }
 
 tasks.processResources {
@@ -71,7 +71,7 @@ tasks.named<ShadowJar>("shadowJar") {
     relocate("net.kyori.examination", "com.plotsquared.core.configuration.examination")
     relocate("io.papermc.lib", "com.plotsquared.bukkit.paperlib")
     relocate("org.bstats", "com.plotsquared.metrics")
-    relocate("com.sk89q.squirrelid", "com.plotsquared.squirrelid")
+    relocate("org.enginehub", "com.plotsquared.squirrelid")
     relocate("org.khelekore.prtree", "com.plotsquared.prtree")
     relocate("com.google.inject", "com.plotsquared.google")
     relocate("org.aopalliance", "com.plotsquared.core.aopalliance")
@@ -80,6 +80,10 @@ tasks.named<ShadowJar>("shadowJar") {
     relocate("com.intellectualsites.http", "com.plotsquared.core.http")
     relocate("com.intellectualsites.paster", "com.plotsquared.core.paster")
     relocate("org.incendo.serverlib", "com.plotsquared.bukkit.serverlib")
+    relocate("org.jetbrains", "com.plotsquared.core.annotations")
+    relocate("org.intellij.lang", "com.plotsquared.core.intellij.annotations")
+    relocate("javax.annotation", "com.plotsquared.core.annotation")
+    relocate("javax.inject", "com.plotsquared.core.annotation.inject")
 
     // Get rid of all the libs which are 100% unused.
     minimize()
@@ -91,9 +95,9 @@ tasks {
     withType<Javadoc> {
         val opt = options as StandardJavadocDocletOptions
         opt.links("https://papermc.io/javadocs/paper/1.17/")
-        opt.links("https://docs.enginehub.org/javadoc/com.sk89q.worldedit/worldedit-core/7.2.6-SNAPSHOT/")
-        opt.links("https://docs.enginehub.org/javadoc/com.sk89q.worldedit/worldedit-bukkit/7.2.6-SNAPSHOT/")
-        opt.links("https://jd.adventure.kyori.net/api/4.8.1/")
+        opt.links("https://docs.enginehub.org/javadoc/com.sk89q.worldedit/worldedit-core/7.2.6/")
+        opt.links("https://docs.enginehub.org/javadoc/com.sk89q.worldedit/worldedit-bukkit/7.2.6/")
+        opt.links("https://jd.adventure.kyori.net/api/4.9.1/")
         opt.links("https://google.github.io/guice/api-docs/5.0.1/javadoc/")
         opt.links("https://checkerframework.org/api/")
     }

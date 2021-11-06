@@ -41,7 +41,6 @@ import net.kyori.adventure.text.minimessage.Template;
 import org.checkerframework.checker.nullness.qual.NonNull;
 
 import javax.annotation.Nullable;
-
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
@@ -108,11 +107,7 @@ public class DefaultProgressSubscriber implements ProgressSubscriber {
     @Override
     public void notifyProgress(@NonNull ChunkCoordinator coordinator, double progress) {
         this.progress.set(progress);
-        if (coordinator.isCancelled() || progress >= 1) {
-            if (task != null) {
-                task.cancel();
-            }
-        } else if (started.compareAndSet(false, true)) {
+        if (started.compareAndSet(false, true)) {
             TaskManager.getPlatformImplementation().taskLater(() -> task = TaskManager
                     .getPlatformImplementation()
                     .taskRepeat(() -> {

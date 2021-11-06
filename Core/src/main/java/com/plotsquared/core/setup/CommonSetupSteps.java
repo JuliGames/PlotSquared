@@ -39,6 +39,7 @@ import com.plotsquared.core.plot.PlotAreaType;
 import com.plotsquared.core.plot.PlotId;
 import com.plotsquared.core.util.SetupUtils;
 import com.plotsquared.core.util.StringMan;
+import net.kyori.adventure.text.minimessage.Template;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
@@ -212,7 +213,7 @@ public enum CommonSetupSteps implements SetupStep {
             }
             if (PlotSquared.platform().worldUtil().isWorld(argument)) {
                 if (PlotSquared.get().getPlotAreaManager().hasPlotArea(argument)) {
-                    plotPlayer.sendMessage(TranslatableCaption.of("setup.setup_world_taken"));
+                    plotPlayer.sendMessage(TranslatableCaption.of("setup.setup_world_taken"), Template.of("value", argument));
                     return this;
                 }
                 plotPlayer.sendMessage(TranslatableCaption.of("setup.setup_world_apply_plotsquared"));
@@ -229,7 +230,7 @@ public enum CommonSetupSteps implements SetupStep {
                 world = builder.setupManager().setupWorld(builder);
             }
             try {
-                plotPlayer.teleport(PlotSquared.platform().worldUtil().getSpawn(world), TeleportCause.COMMAND);
+                plotPlayer.teleport(PlotSquared.platform().worldUtil().getSpawn(world), TeleportCause.COMMAND_SETUP);
             } catch (Exception e) {
                 plotPlayer.sendMessage(TranslatableCaption.of("errors.error_console"));
                 e.printStackTrace();
@@ -278,7 +279,9 @@ public enum CommonSetupSteps implements SetupStep {
     }
 
     private static boolean isValidWorldName(String s) {
-        return s.chars().allMatch((i) -> i == 95 || i == 45 || i >= 97 && i <= 122 || i >= 65 && i <= 90 || i >= 48 && i <= 57 || i == 46);
+        return s
+                .chars()
+                .allMatch((i) -> i == 95 || i == 45 || i >= 97 && i <= 122 || i >= 65 && i <= 90 || i >= 48 && i <= 57 || i == 46);
     }
 
     @Override

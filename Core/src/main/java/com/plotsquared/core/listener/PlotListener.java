@@ -35,12 +35,12 @@ import com.plotsquared.core.events.PlotFlagRemoveEvent;
 import com.plotsquared.core.events.Result;
 import com.plotsquared.core.location.Location;
 import com.plotsquared.core.permissions.Permission;
-import com.plotsquared.core.player.ConsolePlayer;
 import com.plotsquared.core.player.MetaDataAccess;
 import com.plotsquared.core.player.PlayerMetaDataKeys;
 import com.plotsquared.core.player.PlotPlayer;
 import com.plotsquared.core.plot.Plot;
 import com.plotsquared.core.plot.PlotArea;
+import com.plotsquared.core.plot.PlotTitle;
 import com.plotsquared.core.plot.PlotWeather;
 import com.plotsquared.core.plot.comment.CommentManager;
 import com.plotsquared.core.plot.expiration.ExpireManager;
@@ -57,6 +57,8 @@ import com.plotsquared.core.plot.flag.implementations.HealFlag;
 import com.plotsquared.core.plot.flag.implementations.MusicFlag;
 import com.plotsquared.core.plot.flag.implementations.NotifyEnterFlag;
 import com.plotsquared.core.plot.flag.implementations.NotifyLeaveFlag;
+import com.plotsquared.core.plot.flag.implementations.PlotTitleFlag;
+import com.plotsquared.core.plot.flag.implementations.ServerPlotFlag;
 import com.plotsquared.core.plot.flag.implementations.TimeFlag;
 import com.plotsquared.core.plot.flag.implementations.TitlesFlag;
 import com.plotsquared.core.plot.flag.implementations.WeatherFlag;
@@ -161,23 +163,32 @@ public class PlotListener {
         this.eventDispatcher.callEntry(player, plot);
         if (plot.hasOwner()) {
             // This will inherit values from PlotArea
-            final TitlesFlag.TitlesFlagValue titleFlag = plot.getFlag(TitlesFlag.class);
+            final TitlesFlag.TitlesFlagValue titlesFlag = plot.getFlag(TitlesFlag.class);
             final boolean titles;
-            if (titleFlag == TitlesFlag.TitlesFlagValue.NONE) {
+            if (titlesFlag == TitlesFlag.TitlesFlagValue.NONE) {
                 titles = Settings.Titles.DISPLAY_TITLES;
             } else {
-                titles = titleFlag == TitlesFlag.TitlesFlagValue.TRUE;
+                titles = titlesFlag == TitlesFlag.TitlesFlagValue.TRUE;
             }
 
             String greeting = plot.getFlag(GreetingFlag.class);
             if (!greeting.isEmpty()) {
-                if (Settings.Chat.REMOVE_USER_DEFINED_CLICK_EVENTS) {
-                    greeting = greeting.replaceAll(".([c-lC-L]{5}):([a-uA-U_]{11}):[^\\/]*[^>]*>>", "").replace("</click>", "");
-                }
                 if (!Settings.Chat.NOTIFICATION_AS_ACTIONBAR) {
-                    plot.format(StaticCaption.of(greeting), player, false).thenAcceptAsync(player::sendMessage);
+                    player.sendMessage(
+                            TranslatableCaption.of("flags.greeting_flag_format"),
+                            Template.of("world", plot.getWorldName()),
+                            Template.of("plot_id", plot.getId().toString()),
+                            Template.of("alias", plot.getAlias()),
+                            Template.of("greeting", greeting)
+                    );
                 } else {
-                    plot.format(StaticCaption.of(greeting), player, false).thenAcceptAsync(player::sendActionBar);
+                    player.sendActionBar(
+                            TranslatableCaption.of("flags.greeting_flag_format"),
+                            Template.of("world", plot.getWorldName()),
+                            Template.of("plot_id", plot.getId().toString()),
+                            Template.of("alias", plot.getAlias()),
+                            Template.of("greeting", greeting)
+                    );
                 }
             }
 
@@ -294,11 +305,20 @@ public class PlotListener {
             CommentManager.sendTitle(player, plot);
 
             if (titles && !player.getAttribute("disabletitles")) {
-                if (!TranslatableCaption.of("titles.title_entered_plot").getComponent(ConsolePlayer.getConsole()).isEmpty()
-                        || !TranslatableCaption
-                        .of("titles.title_entered_plot_sub")
-                        .getComponent(ConsolePlayer.getConsole())
-                        .isEmpty()) {
+                String title;
+                String subtitle;
+                PlotTitle titleFlag = plot.getFlag(PlotTitleFlag.class);
+                boolean fromFlag;
+                if (titleFlag.title() != null && titleFlag.subtitle() != null) {
+                    title = titleFlag.title();
+                    subtitle = titleFlag.subtitle();
+                    fromFlag = true;
+                } else {
+                    title = "";
+                    subtitle = "";
+                    fromFlag = false;
+                }
+                if (fromFlag || !plot.getFlag(ServerPlotFlag.class) || Settings.Titles.DISPLAY_DEFAULT_ON_SERVER_PLOT) {
                     TaskManager.runTaskLaterAsync(() -> {
                         Plot lastPlot;
                         try (final MetaDataAccess<Plot> lastPlotAccess =
@@ -308,17 +328,20 @@ public class PlotListener {
                         if ((lastPlot != null) && plot.getId().equals(lastPlot.getId()) && plot.hasOwner()) {
                             final UUID plotOwner = plot.getOwnerAbs();
                             String owner = PlayerManager.getName(plotOwner, false);
-                            Caption header = TranslatableCaption.of("titles.title_entered_plot");
-                            Caption subHeader = TranslatableCaption.of("titles.title_entered_plot_sub");
+                            Caption header = fromFlag ? StaticCaption.of(title) : TranslatableCaption.of("titles" +
+                                    ".title_entered_plot");
+                            Caption subHeader = fromFlag ? StaticCaption.of(subtitle) : TranslatableCaption.of("titles" +
+                                    ".title_entered_plot_sub");
                             Template plotTemplate = Template.of("plot", lastPlot.getId().toString());
                             Template worldTemplate = Template.of("world", player.getLocation().getWorldName());
                             Template ownerTemplate = Template.of("owner", owner);
+                            Template aliasTemplate = Template.of("alias", plot.getAlias());
 
                             final Consumer<String> userConsumer = user -> {
                                 if (Settings.Titles.TITLES_AS_ACTIONBAR) {
-                                    player.sendActionBar(header, plotTemplate, worldTemplate, ownerTemplate);
+                                    player.sendActionBar(header, aliasTemplate, plotTemplate, worldTemplate, ownerTemplate);
                                 } else {
-                                    player.sendTitle(header, subHeader, plotTemplate, worldTemplate, ownerTemplate);
+                                    player.sendTitle(header, subHeader, aliasTemplate, plotTemplate, worldTemplate, ownerTemplate);
                                 }
                             };
 
@@ -395,13 +418,22 @@ public class PlotListener {
 
                 String farewell = plot.getFlag(FarewellFlag.class);
                 if (!farewell.isEmpty()) {
-                    if (Settings.Chat.REMOVE_USER_DEFINED_CLICK_EVENTS) {
-                        farewell = farewell.replaceAll(".([c-lC-L]{5}):([a-uA-U_]{11}):[^\\/]*[^>]*>", "").replace("</click>", "");
-                    }
                     if (!Settings.Chat.NOTIFICATION_AS_ACTIONBAR) {
-                        plot.format(StaticCaption.of(farewell), player, false).thenAcceptAsync(player::sendMessage);
+                        player.sendMessage(
+                                TranslatableCaption.of("flags.farewell_flag_format"),
+                                Template.of("world", plot.getWorldName()),
+                                Template.of("plot_id", plot.getId().toString()),
+                                Template.of("alias", plot.getAlias()),
+                                Template.of("farewell", farewell)
+                        );
                     } else {
-                        plot.format(StaticCaption.of(farewell), player, false).thenAcceptAsync(player::sendActionBar);
+                        player.sendActionBar(
+                                TranslatableCaption.of("flags.farewell_flag_format"),
+                                Template.of("world", plot.getWorldName()),
+                                Template.of("plot_id", plot.getId().toString()),
+                                Template.of("alias", plot.getAlias()),
+                                Template.of("farewell", farewell)
+                        );
                     }
                 }
 

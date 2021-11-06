@@ -46,9 +46,9 @@ import com.plotsquared.core.util.Permissions;
 import com.plotsquared.core.util.PlotExpression;
 import com.plotsquared.core.util.task.TaskManager;
 import net.kyori.adventure.text.minimessage.Template;
-import org.checkerframework.checker.nullness.qual.NonNull;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.checkerframework.checker.nullness.qual.NonNull;
 
 @CommandDeclaration(
         command = "claim",
@@ -183,17 +183,19 @@ public class Claim extends SubCommand {
                 );
             }
         }
-        int border = area.getBorder();
-        if (border != Integer.MAX_VALUE && plot.getDistanceFromOrigin() > border && !force) {
-            player.sendMessage(TranslatableCaption.of("border.border"));
-            return false;
+        if (!Permissions.hasPermission(player, Permission.PERMISSION_ADMIN_BYPASS_BORDER)) {
+            int border = area.getBorder();
+            if (border != Integer.MAX_VALUE && plot.getDistanceFromOrigin() > border && !force) {
+                player.sendMessage(TranslatableCaption.of("border.denied"));
+                return false;
+            }
         }
         plot.setOwnerAbs(player.getUUID());
         final String finalSchematic = schematic;
         DBFunc.createPlotSafe(plot, () -> {
             try {
                 TaskManager.getPlatformImplementation().sync(() -> {
-                    if (!plot.claim(player, true, finalSchematic, false)) {
+                    if (!plot.claim(player, true, finalSchematic, false, false)) {
                         LOGGER.info("Failed to claim plot {}", plot.getId().toCommaSeparatedString());
                         player.sendMessage(TranslatableCaption.of("working.plot_not_claimed"));
                         plot.setOwnerAbs(null);
