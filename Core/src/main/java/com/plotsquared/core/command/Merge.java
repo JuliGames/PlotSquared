@@ -8,7 +8,7 @@
  *                                    | |
  *                                    |_|
  *            PlotSquared plot management system for Minecraft
- *                  Copyright (C) 2021 IntellectualSites
+ *               Copyright (C) 2014 - 2022 IntellectualSites
  *
  *     This program is free software: you can redistribute it and/or modify
  *     it under the terms of the GNU General Public License as published by
@@ -189,6 +189,7 @@ public class Merge extends SubCommand {
                     );
                 }
                 player.sendMessage(TranslatableCaption.of("merge.success_merge"));
+                eventDispatcher.callPostMerge(player, plot);
                 return true;
             }
             player.sendMessage(TranslatableCaption.of("merge.no_available_automerge"));
@@ -225,6 +226,7 @@ public class Merge extends SubCommand {
                 );
             }
             player.sendMessage(TranslatableCaption.of("merge.success_merge"));
+            eventDispatcher.callPostMerge(player, plot);
             return true;
         }
         Plot adjacent = plot.getRelative(direction);
@@ -272,6 +274,7 @@ public class Merge extends SubCommand {
                     );
                 }
                 player.sendMessage(TranslatableCaption.of("merge.success_merge"));
+                eventDispatcher.callPostMerge(player, plot);
             };
             if (!force && hasConfirmation(player)) {
                 CmdConfirm.addPending(accepter, MINI_MESSAGE.serialize(MINI_MESSAGE

@@ -8,7 +8,7 @@
  *                                    | |
  *                                    |_|
  *            PlotSquared plot management system for Minecraft
- *                  Copyright (C) 2021 IntellectualSites
+ *               Copyright (C) 2014 - 2022 IntellectualSites
  *
  *     This program is free software: you can redistribute it and/or modify
  *     it under the terms of the GNU General Public License as published by
@@ -37,7 +37,9 @@ public enum Permission {
     PERMISSION_STAR("*"),
     PERMISSION_ADMIN("plots.admin"),
     PERMISSION_ADMIN_AREA_SUDO("plots.admin.area.sudo"),
+    @Deprecated(forRemoval = true, since = "6.2.2")
     PERMISSION_PROJECTILE_UNOWNED("plots.projectile.unowned"),
+    @Deprecated(forRemoval = true, since = "6.2.2")
     PERMISSION_PROJECTILE_OTHER("plots.projectile.other"),
     PERMISSION_ADMIN_INTERACT_BLOCKED_CMDS("plots.admin.interact.blockedcommands"),
     PERMISSION_WORLDEDIT_BYPASS("plots.worldedit.bypass"),

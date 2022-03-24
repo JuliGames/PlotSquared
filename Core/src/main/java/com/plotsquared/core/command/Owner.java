@@ -8,7 +8,7 @@
  *                                    | |
  *                                    |_|
  *            PlotSquared plot management system for Minecraft
- *                  Copyright (C) 2021 IntellectualSites
+ *               Copyright (C) 2014 - 2022 IntellectualSites
  *
  *     This program is free software: you can redistribute it and/or modify
  *     it under the terms of the GNU General Public License as published by
@@ -44,6 +44,7 @@ import com.plotsquared.core.util.TabCompletions;
 import com.plotsquared.core.util.task.TaskManager;
 import net.kyori.adventure.text.minimessage.Template;
 import org.checkerframework.checker.nullness.qual.NonNull;
+import org.checkerframework.checker.nullness.qual.Nullable;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -76,6 +77,7 @@ public class Owner extends SetCommand {
             );
             return false;
         }
+        @Nullable final UUID oldOwner = plot.getOwnerAbs();
         Set<Plot> plots = plot.getConnectedPlots();
 
         final Consumer<UUID> uuidConsumer = uuid -> {
@@ -124,12 +126,15 @@ public class Owner extends SetCommand {
                     );
                     return;
                 }
-                plot.getPlotModificationManager().unlinkPlot(unlinkEvent.isCreateRoad(), unlinkEvent.isCreateRoad());
+                if (plot.getPlotModificationManager().unlinkPlot(unlinkEvent.isCreateRoad(), unlinkEvent.isCreateRoad())) {
+                    eventDispatcher.callPostUnlink(plot, PlotUnlinkEvent.REASON.NEW_OWNER);
+                }
                 Set<Plot> connected = plot.getConnectedPlots();
                 for (Plot current : connected) {
                     current.unclaim();
                     current.getPlotModificationManager().removeSign();
                 }
+                eventDispatcher.callPostOwnerChange(player, plot, oldOwner);
                 player.sendMessage(TranslatableCaption.of("owner.set_owner"));
                 return;
             }
@@ -137,7 +142,7 @@ public class Owner extends SetCommand {
             if (plot.isOwner(uuid)) {
                 player.sendMessage(
                         TranslatableCaption.of("member.already_owner"),
-                        Template.of("player", PlayerManager.getName(uuid, false))
+                        Template.of("player", PlayerManager.resolveName(uuid, false).getComponent(player))
                 );
                 return;
             }
@@ -146,7 +151,7 @@ public class Owner extends SetCommand {
                 if (other == null) {
                     player.sendMessage(
                             TranslatableCaption.of("errors.invalid_player_offline"),
-                            Template.of("player", PlayerManager.getName(uuid))
+                            Template.of("player", PlayerManager.resolveName(uuid).getComponent(player))
                     );
                     return;
                 }
@@ -178,6 +183,7 @@ public class Owner extends SetCommand {
                         }
                         plot.getPlotModificationManager().setSign(finalName);
                         player.sendMessage(TranslatableCaption.of("owner.set_owner"));
+                        eventDispatcher.callPostOwnerChange(player, plot, oldOwner);
                         if (other != null) {
                             other.sendMessage(
                                     TranslatableCaption.of("owner.now_owner"),

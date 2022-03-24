@@ -8,7 +8,7 @@
  *                                    | |
  *                                    |_|
  *            PlotSquared plot management system for Minecraft
- *                  Copyright (C) 2021 IntellectualSites
+ *               Copyright (C) 2014 - 2022 IntellectualSites
  *
  *     This program is free software: you can redistribute it and/or modify
  *     it under the terms of the GNU General Public License as published by
@@ -25,9 +25,9 @@
  */
 package com.plotsquared.core.services.plots;
 
+import cloud.commandframework.services.types.Service;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
-import com.intellectualsites.services.types.Service;
 import com.plotsquared.core.player.PlotPlayer;
 import com.plotsquared.core.plot.Plot;
 import com.plotsquared.core.plot.PlotArea;

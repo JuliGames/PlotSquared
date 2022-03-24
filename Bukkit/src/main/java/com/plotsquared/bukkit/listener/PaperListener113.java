@@ -8,7 +8,7 @@
  *                                    | |
  *                                    |_|
  *            PlotSquared plot management system for Minecraft
- *                  Copyright (C) 2021 IntellectualSites
+ *               Copyright (C) 2014 - 2022 IntellectualSites
  *
  *     This program is free software: you can redistribute it and/or modify
  *     it under the terms of the GNU General Public License as published by
@@ -36,7 +36,6 @@ import com.plotsquared.core.plot.world.PlotAreaManager;
 import net.kyori.adventure.text.minimessage.Template;
 import org.bukkit.block.Banner;
 import org.bukkit.block.Beacon;
-import org.bukkit.block.Bed;
 import org.bukkit.block.BlockState;
 import org.bukkit.block.CommandBlock;
 import org.bukkit.block.Comparator;
@@ -51,6 +50,7 @@ import org.bukkit.block.Jukebox;
 import org.bukkit.block.Sign;
 import org.bukkit.block.Skull;
 import org.bukkit.block.Structure;
+import org.bukkit.block.data.type.Bed;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.block.BlockPlaceEvent;
 import org.checkerframework.checker.nullness.qual.NonNull;

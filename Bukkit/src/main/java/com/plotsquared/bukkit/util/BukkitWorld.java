@@ -8,7 +8,7 @@
  *                                    | |
  *                                    |_|
  *            PlotSquared plot management system for Minecraft
- *                  Copyright (C) 2021 IntellectualSites
+ *               Copyright (C) 2014 - 2022 IntellectualSites
  *
  *     This program is free software: you can redistribute it and/or modify
  *     it under the terms of the GNU General Public License as published by
@@ -36,6 +36,18 @@ import java.util.Objects;
 public class BukkitWorld implements World<org.bukkit.World> {
 
     private static final Map<String, BukkitWorld> worldMap = Maps.newHashMap();
+    private static final boolean HAS_MIN_Y;
+
+    static {
+        boolean temp;
+        try {
+            org.bukkit.World.class.getMethod("getMinHeight");
+            temp = true;
+        } catch (NoSuchMethodException e) {
+            temp = false;
+        }
+        HAS_MIN_Y = temp;
+    }
 
     private final org.bukkit.World world;
 
@@ -73,6 +85,24 @@ public class BukkitWorld implements World<org.bukkit.World> {
         return bukkitWorld;
     }
 
+    /**
+     * Get the min world height from a Bukkit {@link org.bukkit.World}. Inclusive
+     *
+     * @since 6.6.0
+     */
+    public static int getMinWorldHeight(org.bukkit.World world) {
+        return HAS_MIN_Y ? world.getMinHeight() : 0;
+    }
+
+    /**
+     * Get the max world height from a Bukkit {@link org.bukkit.World}. Exclusive
+     *
+     * @since 6.6.0
+     */
+    public static int getMaxWorldHeight(org.bukkit.World world) {
+        return HAS_MIN_Y ? world.getMaxHeight() : 256;
+    }
+
     @Override
     public org.bukkit.World getPlatformWorld() {
         return this.world;
@@ -83,32 +113,39 @@ public class BukkitWorld implements World<org.bukkit.World> {
         return this.world.getName();
     }
 
+    @Override
+    public int getMinHeight() {
+        return getMinWorldHeight(world);
+    }
+
+    @Override
+    public int getMaxHeight() {
+        return getMaxWorldHeight(world) - 1;
+    }
+
+    @Override
     public boolean equals(final Object o) {
-        if (o == this) {
+        if (this == o) {
             return true;
         }
-        if (!(o instanceof final BukkitWorld other)) {
+        if (o == null || getClass() != o.getClass()) {
             return false;
         }
-        if (!other.canEqual(this)) {
-            return false;
-        }
-        if (!Objects.equals(this.world, other.world)) {
-            return false;
-        }
-        return true;
+        final BukkitWorld that = (BukkitWorld) o;
+        return world.equals(that.world);
     }
 
+    @Override
+    public int hashCode() {
+        return world.hashCode();
+    }
+
+    /**
+     * @deprecated This method is not meant to be invoked or overridden, with no replacement.
+     */
+    @Deprecated(forRemoval = true, since = "6.6.0")
     protected boolean canEqual(final Object other) {
         return other instanceof BukkitWorld;
-    }
-
-    public int hashCode() {
-        final int PRIME = 59;
-        int result = 1;
-        final Object $world = this.world;
-        result = result * PRIME + ($world == null ? 43 : $world.hashCode());
-        return result;
     }
 
     public String toString() {

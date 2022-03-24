@@ -8,7 +8,7 @@
  *                                    | |
  *                                    |_|
  *            PlotSquared plot management system for Minecraft
- *                  Copyright (C) 2021 IntellectualSites
+ *               Copyright (C) 2014 - 2022 IntellectualSites
  *
  *     This program is free software: you can redistribute it and/or modify
  *     it under the terms of the GNU General Public License as published by
@@ -42,7 +42,7 @@ public class PlayerPlotDeniedEvent extends PlotEvent {
      * @param initiator Player that initiated the event
      * @param plot      Plot in which the event occurred
      * @param player    Player that was denied/un-denied
-     * @param added     true of add to deny list, false if removed
+     * @param added     {@code true} of add to deny list, {@code false} if removed
      */
     public PlayerPlotDeniedEvent(PlotPlayer<?> initiator, Plot plot, UUID player, boolean added) {
         super(plot);

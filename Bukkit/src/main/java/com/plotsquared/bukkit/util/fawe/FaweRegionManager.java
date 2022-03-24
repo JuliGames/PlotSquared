@@ -8,7 +8,7 @@
  *                                    | |
  *                                    |_|
  *            PlotSquared plot management system for Minecraft
- *                  Copyright (C) 2021 IntellectualSites
+ *               Copyright (C) 2014 - 2022 IntellectualSites
  *
  *     This program is free software: you can redistribute it and/or modify
  *     it under the terms of the GNU General Public License as published by
@@ -108,6 +108,11 @@ public class FaweRegionManager extends BukkitRegionManager {
     @Override
     public void setBiome(CuboidRegion region, int extendBiome, BiomeType biome, String world, Runnable whenDone) {
         delegate.setBiome(region, extendBiome, biome, world, whenDone);
+    }
+
+    @Override
+    public void setBiome(CuboidRegion region, int extendBiome, BiomeType biome, PlotArea area, Runnable whenDone) {
+        delegate.setBiome(region, extendBiome, biome, area.getWorldName(), whenDone);
     }
 
     @Override

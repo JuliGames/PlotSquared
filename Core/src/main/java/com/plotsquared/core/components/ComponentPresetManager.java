@@ -8,7 +8,7 @@
  *                                    | |
  *                                    |_|
  *            PlotSquared plot management system for Minecraft
- *                  Copyright (C) 2021 IntellectualSites
+ *               Copyright (C) 2014 - 2022 IntellectualSites
  *
  *     This program is free software: you can redistribute it and/or modify
  *     it under the terms of the GNU General Public License as published by
@@ -75,6 +75,7 @@ public class ComponentPresetManager {
     private final InventoryUtil inventoryUtil;
     private File componentsFile;
 
+    @SuppressWarnings("unchecked")
     @Inject
     public ComponentPresetManager(final @NonNull EconHandler econHandler, final @NonNull InventoryUtil inventoryUtil) throws
             IOException {
@@ -127,7 +128,7 @@ public class ComponentPresetManager {
                             0,
                             "",
                             "<rainbow:2>Disco Floor</rainbow>",
-                            Arrays.asList("<gold>Spice up your plot floor</gold>"),
+                            List.of("<gold>Spice up your plot floor</gold>"),
                             ItemTypes.YELLOW_WOOL
                     ));
             yamlConfiguration.set("presets", defaultPreset.stream().map(ComponentPreset::serialize).collect(Collectors.toList()));
@@ -180,6 +181,10 @@ public class ComponentPresetManager {
             }
             allowedPresets.add(componentPreset);
         }
+        if (allowedPresets.isEmpty()) {
+            player.sendMessage(TranslatableCaption.of("preset.empty"));
+            return null;
+        }
         final int size = (int) Math.ceil((double) allowedPresets.size() / 9.0D);
         final PlotInventory plotInventory = new PlotInventory(this.inventoryUtil, player, size,
                 TranslatableCaption.of("preset.title").getComponent(player)) {
@@ -209,7 +214,13 @@ public class ComponentPresetManager {
                     return false;
                 }
 
-                if (componentPreset.getCost() > 0.0D && econHandler.isEnabled(plot.getArea())) {
+                if (componentPreset.getCost() > 0.0D) {
+                    if (!econHandler.isEnabled(plot.getArea())) {
+                        getPlayer().sendMessage(
+                                TranslatableCaption.of("preset.economy_disabled"),
+                                Template.of("preset", componentPreset.getDisplayName()));
+                        return false;
+                    }
                     if (econHandler.getMoney(getPlayer()) < componentPreset.getCost()) {
                         getPlayer().sendMessage(TranslatableCaption.of("preset.preset_cannot_afford"));
                         return false;
@@ -245,11 +256,16 @@ public class ComponentPresetManager {
         for (int i = 0; i < allowedPresets.size(); i++) {
             final ComponentPreset preset = allowedPresets.get(i);
             final List<String> lore = new ArrayList<>();
-            if (preset.getCost() > 0 && this.econHandler.isEnabled(plot.getArea())) {
-                lore.add(MINI_MESSAGE.serialize(MINI_MESSAGE.parse(
-                        TranslatableCaption.of("preset.preset_lore_cost").getComponent(player),
-                        Template.of("cost", String.format("%.2f", preset.getCost()))
-                )));
+            if (preset.getCost() > 0) {
+                if (!this.econHandler.isEnabled(plot.getArea())) {
+                    lore.add(MINI_MESSAGE.serialize(MINI_MESSAGE.parse(
+                            TranslatableCaption.of("preset.preset_lore_economy_disabled").getComponent(player))));
+                } else {
+                    lore.add(MINI_MESSAGE.serialize(MINI_MESSAGE.parse(
+                            TranslatableCaption.of("preset.preset_lore_cost").getComponent(player),
+                            Template.of("cost", String.format("%.2f", preset.getCost()))
+                    )));
+                }
             }
             lore.add(MINI_MESSAGE.serialize(MINI_MESSAGE.parse(
                     TranslatableCaption.of("preset.preset_lore_component").getComponent(player),

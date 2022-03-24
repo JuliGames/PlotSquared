@@ -8,7 +8,7 @@
  *                                    | |
  *                                    |_|
  *            PlotSquared plot management system for Minecraft
- *                  Copyright (C) 2021 IntellectualSites
+ *               Copyright (C) 2014 - 2022 IntellectualSites
  *
  *     This program is free software: you can redistribute it and/or modify
  *     it under the terms of the GNU General Public License as published by
@@ -76,8 +76,9 @@ public class RegionUtil {
         return new CuboidRegion(min, max);
     }
 
+    @Deprecated(forRemoval = true, since = "6.6.0")
     public static CuboidRegion createRegion(int pos1x, int pos2x, int pos1z, int pos2z) {
-        return createRegion(pos1x, pos2x, 0, Plot.MAX_HEIGHT - 1, pos1z, pos2z);
+        return createRegion(pos1x, pos2x, 0, 255, pos1z, pos2z);
     }
 
     public static CuboidRegion createRegion(

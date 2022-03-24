@@ -18,7 +18,7 @@ plugins {
     idea
 }
 
-version = "6.1.4-SNAPSHOT"
+version = "6.6.2-SNAPSHOT"
 
 allprojects {
     group = "com.plotsquared"
@@ -33,13 +33,13 @@ allprojects {
         }
 
         maven {
-            name = "Jitpack"
-            url = uri("https://jitpack.io")
+            name = "Sonatype OSS (S01)"
+            url = uri("https://s01.oss.sonatype.org/content/repositories/snapshots")
         }
 
         maven {
-            name = "IntellectualSites"
-            url = uri("https://mvn.intellectualsites.com/content/groups/public/")
+            name = "Jitpack"
+            url = uri("https://jitpack.io")
         }
 
         maven {
@@ -67,14 +67,21 @@ val javadocDir = rootDir.resolve("docs").resolve("javadoc").resolve(project.name
 allprojects {
     dependencies {
         // Tests
-        testImplementation("junit:junit:4.13.2")
-        testImplementation("org.junit.jupiter:junit-jupiter:5.8.1")
+        testImplementation("org.junit.jupiter:junit-jupiter:5.8.2")
     }
 
     plugins.withId("java") {
         the<JavaPluginExtension>().toolchain {
-            languageVersion.set(JavaLanguageVersion.of(16))
+            languageVersion.set(JavaLanguageVersion.of(17))
         }
+    }
+
+    tasks.compileJava.configure {
+        options.release.set(17)
+    }
+
+    configurations.all {
+        attributes.attribute(TargetJvmVersion.TARGET_JVM_VERSION_ATTRIBUTE, 17)
     }
 
     configure<LicenseExtension> {
@@ -236,7 +243,7 @@ tasks {
 
                 val rootOptions = aggregatedJavadocs.options as StandardJavadocDocletOptions
                 val subOptions = task.options as StandardJavadocDocletOptions
-                rootOptions.links(*subOptions.links.orEmpty().minus(rootOptions.links.orEmpty()).toTypedArray())
+                rootOptions.links(*subOptions.links.orEmpty().minus(rootOptions.links.orEmpty().toSet()).toTypedArray())
             }
         }
     }

@@ -8,7 +8,7 @@
  *                                    | |
  *                                    |_|
  *            PlotSquared plot management system for Minecraft
- *                  Copyright (C) 2021 IntellectualSites
+ *               Copyright (C) 2014 - 2022 IntellectualSites
  *
  *     This program is free software: you can redistribute it and/or modify
  *     it under the terms of the GNU General Public License as published by
@@ -80,7 +80,7 @@ public class ExpiryTask {
                         diff = settings.REQUIRED_PLOTS - plots.size();
                     }
                     List<Long> entireList =
-                            plots.stream().map(plot -> ExpireManager.IMP.getAge(plot))
+                            plots.stream().map(plot -> ExpireManager.IMP.getAge(plot, settings.DELETE_IF_OWNER_IS_UNKNOWN))
                                     .collect(Collectors.toList());
                     List<Long> top = new ArrayList<>(diff + 1);
                     if (diff > 1000) {
@@ -157,5 +157,13 @@ public class ExpiryTask {
         return settings.CONFIRMATION;
     }
 
+    /**
+     * Returns {@code true} if this task respects unknown owners
+     * @return {@code true} if unknown owners should be counted as never online
+     * @since 6.4.0
+     */
+    public boolean shouldDeleteForUnknownOwner() {
+        return settings.DELETE_IF_OWNER_IS_UNKNOWN;
+    }
 
 }

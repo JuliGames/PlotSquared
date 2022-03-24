@@ -8,7 +8,7 @@
  *                                    | |
  *                                    |_|
  *            PlotSquared plot management system for Minecraft
- *                  Copyright (C) 2021 IntellectualSites
+ *               Copyright (C) 2014 - 2022 IntellectualSites
  *
  *     This program is free software: you can redistribute it and/or modify
  *     it under the terms of the GNU General Public License as published by
@@ -58,6 +58,21 @@ public interface World<T> {
      */
     @NonNull String getName();
 
+    /**
+     * Get the min world height. Inclusive.
+     *
+     * @since 6.6.0
+     */
+    int getMinHeight();
+
+
+    /**
+     * Get the max world height. Inclusive.
+     *
+     * @since 6.6.0
+     */
+    int getMaxHeight();
+
     class NullWorld<T> implements World<T> {
 
         private NullWorld() {
@@ -72,6 +87,16 @@ public interface World<T> {
         @Override
         public @NonNull String getName() {
             return "";
+        }
+
+        @Override
+        public int getMinHeight() {
+            return 0;
+        }
+
+        @Override
+        public int getMaxHeight() {
+            return 0;
         }
 
         @Override

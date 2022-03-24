@@ -8,7 +8,7 @@
  *                                    | |
  *                                    |_|
  *            PlotSquared plot management system for Minecraft
- *                  Copyright (C) 2021 IntellectualSites
+ *               Copyright (C) 2014 - 2022 IntellectualSites
  *
  *     This program is free software: you can redistribute it and/or modify
  *     it under the terms of the GNU General Public License as published by
@@ -196,10 +196,12 @@ public class Settings extends Config {
         public boolean CONFIRMATION = true;
         public int DAYS = 90;
         public int SKIP_ACCOUNT_AGE_DAYS = -1;
+        @Comment("True, if a plot should be deleted if the plot owner is unknown to the server")
+        public boolean DELETE_IF_OWNER_IS_UNKNOWN = false;
         public List<String> WORLDS = new ArrayList<>(Collections.singletonList("*"));
 
 
-        @Comment("See: https://github.com/IntellectualSites/PlotSquared-Documentation/wiki/Plot-analysis for a description of each value.")
+        @Comment("See: https://intellectualsites.github.io/plotsquared-documentation/optimization/plot-analysis for a description of each value.")
         public static final class CALIBRATION {
 
             public int VARIETY = 0;
@@ -219,7 +221,7 @@ public class Settings extends Config {
 
 
     @Comment({"Chunk processor related settings",
-            "See https://github.com/IntellectualSites/PlotSquared-Documentation/wiki/Chunk-processor for more information."})
+            "See https://intellectualsites.github.io/plotsquared-documentation/optimization/chunk-processor for more information."})
     public static class Chunk_Processor {
 
         @Comment("Auto trim will not save chunks which aren't claimed")
@@ -279,8 +281,10 @@ public class Settings extends Config {
         public static boolean SCIENTIFIC = false;
         @Comment("Replace wall when merging")
         public static boolean MERGE_REPLACE_WALL = true;
+        @Comment("Always show explosion Particles, even if explosion flag is set to false")
+        public static boolean ALWAYS_SHOW_EXPLOSIONS = false;
         @Comment({"Blocks that may not be used in plot components",
-                "Checkout the wiki article regarding plot components before modifying: https://github.com/IntellectualSites/PlotSquared-Documentation/wiki/Plot-Components"})
+                "Checkout the wiki article regarding plot components before modifying: https://intellectualsites.github.io/plotsquared-documentation/customization/plot-components"})
         public static List<String>
                 INVALID_BLOCKS = Arrays.asList(
                 // Acacia Stuff
@@ -402,7 +406,7 @@ public class Settings extends Config {
 
 
     @Comment({"Schematic Settings",
-            "See https://github.com/IntellectualSites/PlotSquared-Documentation/wiki/Schematic-on-Claim for more information."})
+            "See https://intellectualsites.github.io/plotsquared-documentation/schematics/schematic-on-claim for more information."})
     public static final class Schematics {
 
         @Comment(
@@ -415,6 +419,12 @@ public class Settings extends Config {
                 " - This will still only paste a schematic with a plot's bounds.",
                 " - If a schematic is too big, it will cut off, and if too small, will not full the plot."})
         public static boolean PASTE_MISMATCHES = true;
+        @Comment({"If the wall height should be taken into account when calculating the road schematic paste height",
+                " - If true, will use the lower of wall and road height.",
+                " - If true, will ensure correct schematic behaviour (no parts are cut off).",
+                " - Set to false if you experience the road being set one block too low",
+                "   (only for road schematics created pre 6.1.4)."})
+        public static boolean USE_WALL_IN_ROAD_SCHEM_HEIGHT = true;
 
     }
 
@@ -428,7 +438,7 @@ public class Settings extends Config {
     }
 
 
-    @Deprecated(forRemoval = true)
+    @Deprecated(forRemoval = true, since = "6.0.0")
     @Comment("Schematic interface related settings")
     public static class Web {
 
@@ -525,7 +535,7 @@ public class Settings extends Config {
 
 
     @Comment({"Backup related settings",
-            "See https://github.com/IntellectualSites/PlotSquared-Documentation/wiki/Backups for more information."})
+            "See https://intellectualsites.github.io/plotsquared-documentation/plot-backups for more information."})
     public static final class Backup {
 
         @Comment("Automatically backup plots when destructive commands are performed, e.g. /plot clear")
@@ -556,8 +566,10 @@ public class Settings extends Config {
         public static boolean ON_DEATH = false;
         @Comment("Teleport to your plot on login")
         public static boolean ON_LOGIN = false;
-        @Comment("Teleport to your plot on claim")
+        @Comment("Teleport to your plot on claim (/plot claim)")
         public static boolean ON_CLAIM = true;
+        @Comment("Teleport to your plot on auto (/plot auto)")
+        public static boolean ON_AUTO = true;
         @Comment({"Add a delay to all teleport commands (in seconds)",
                 "Assign `plots.teleport.delay.bypass` to bypass the cooldown"})
         public static int DELAY = 0;
@@ -772,7 +784,7 @@ public class Settings extends Config {
         public static boolean
                 PERSISTENT_ROAD_REGEN = true;
         @Comment({"Enable the `/plot component` preset GUI",
-                "Read more about components here: https://github.com/IntellectualSites/PlotSquared-Documentation/wiki/Plot-Components"})
+                "Read more about components here: https://intellectualsites.github.io/plotsquared-documentation/customization/plot-components"})
         public static boolean COMPONENT_PRESETS = true;
         @Comment("Enable per user locale")
         public static boolean PER_USER_LOCALE = false;

@@ -8,7 +8,7 @@
  *                                    | |
  *                                    |_|
  *            PlotSquared plot management system for Minecraft
- *                  Copyright (C) 2021 IntellectualSites
+ *               Copyright (C) 2014 - 2022 IntellectualSites
  *
  *     This program is free software: you can redistribute it and/or modify
  *     it under the terms of the GNU General Public License as published by
@@ -187,7 +187,7 @@ public abstract class PlotManager {
      * @param plotIds list of PlotIds to finish the merge for
      * @param queue   Nullable {@link QueueCoordinator}. If null, creates own queue and enqueues,
      *                otherwise writes to the queue but does not enqueue.
-     * @return false if part if the merge failed, otherwise true if successful.
+     * @return {@code false} if part if the merge failed, otherwise {@code true} if successful.
      */
     public abstract boolean finishPlotMerge(@NonNull List<PlotId> plotIds, @Nullable QueueCoordinator queue);
 
@@ -214,7 +214,7 @@ public abstract class PlotManager {
      * @return the world height
      * @deprecated In favor of custom world heights within 1.17 and therefore scheduled for removal without replacement
      */
-    @Deprecated(forRemoval = true)
+    @Deprecated(forRemoval = true, since = "6.0.0")
     public int getWorldHeight() {
         return 255;
     }
@@ -224,7 +224,7 @@ public abstract class PlotManager {
      *
      * @param queue Nullable {@link QueueCoordinator}. If null, creates own queue and enqueues,
      *              otherwise writes to the queue but does not enqueue.
-     * @return true if the wall blocks were successfully set
+     * @return {@code true} if the wall blocks were successfully set
      */
     public boolean regenerateAllPlotWalls(@Nullable QueueCoordinator queue) {
         boolean success = true;

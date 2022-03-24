@@ -8,7 +8,7 @@
  *                                    | |
  *                                    |_|
  *            PlotSquared plot management system for Minecraft
- *                  Copyright (C) 2021 IntellectualSites
+ *               Copyright (C) 2014 - 2022 IntellectualSites
  *
  *     This program is free software: you can redistribute it and/or modify
  *     it under the terms of the GNU General Public License as published by
@@ -126,7 +126,7 @@ public class Done extends SubCommand {
         long flagValue = System.currentTimeMillis() / 1000;
         PlotFlag<?, ?> plotFlag = plot.getFlagContainer().getFlag(DoneFlag.class)
                 .createFlagInstance(Long.toString(flagValue));
-        PlotFlagAddEvent event = new PlotFlagAddEvent(plotFlag, plot);
+        PlotFlagAddEvent event = eventDispatcher.callFlagAdd(plotFlag, plot);
         if (event.getEventResult() == Result.DENY) {
             player.sendMessage(TranslatableCaption.of("events.event_denied"));
             return;

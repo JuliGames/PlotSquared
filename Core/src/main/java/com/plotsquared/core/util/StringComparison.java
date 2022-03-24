@@ -8,7 +8,7 @@
  *                                    | |
  *                                    |_|
  *            PlotSquared plot management system for Minecraft
- *                  Copyright (C) 2021 IntellectualSites
+ *               Copyright (C) 2014 - 2022 IntellectualSites
  *
  *     This program is free software: you can redistribute it and/or modify
  *     it under the terms of the GNU General Public License as published by
@@ -59,6 +59,7 @@ public class StringComparison<T> {
         this(input, objects, Object::toString);
     }
 
+    @SuppressWarnings("unchecked")
     public StringComparison(String input, Collection<T> objects, Function<T, String> toString) {
         this(input, (T[]) objects.toArray(), toString);
     }

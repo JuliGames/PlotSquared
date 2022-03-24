@@ -8,7 +8,7 @@
  *                                    | |
  *                                    |_|
  *            PlotSquared plot management system for Minecraft
- *                  Copyright (C) 2021 IntellectualSites
+ *               Copyright (C) 2014 - 2022 IntellectualSites
  *
  *     This program is free software: you can redistribute it and/or modify
  *     it under the terms of the GNU General Public License as published by
@@ -203,7 +203,7 @@ public class ListCmd extends SubCommand {
                 sort[0] = false;
                 plotConsumer.accept(PlotQuery
                         .newQuery()
-                        .ownedBy(player)
+                        .ownersInclude(player)
                         .whereBasePlot()
                         .withSortingStrategy(SortingStrategy.SORT_BY_TEMP));
             }
@@ -397,7 +397,8 @@ public class ListCmd extends SubCommand {
                             sort[0] = false;
                             plotConsumer.accept(PlotQuery
                                     .newQuery()
-                                    .ownedBy(uuid)
+                                    .ownersInclude(uuid)
+                                    .whereBasePlot()
                                     .withSortingStrategy(SortingStrategy.SORT_BY_TEMP));
                         }
                     }

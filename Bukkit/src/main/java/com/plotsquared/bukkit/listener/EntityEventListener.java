@@ -8,7 +8,7 @@
  *                                    | |
  *                                    |_|
  *            PlotSquared plot management system for Minecraft
- *                  Copyright (C) 2021 IntellectualSites
+ *               Copyright (C) 2014 - 2022 IntellectualSites
  *
  *     This program is free software: you can redistribute it and/or modify
  *     it under the terms of the GNU General Public License as published by
@@ -48,6 +48,7 @@ import com.plotsquared.core.util.Permissions;
 import com.sk89q.worldedit.bukkit.BukkitAdapter;
 import com.sk89q.worldedit.world.block.BlockType;
 import org.bukkit.Material;
+import org.bukkit.Particle;
 import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Ageable;
@@ -323,6 +324,10 @@ public class EntityEventListener implements Listener {
             }
         }
         event.setCancelled(true);
+        //Spawn Explosion Particles when enabled in settings
+        if (Settings.General.ALWAYS_SHOW_EXPLOSIONS) {
+            event.getLocation().getWorld().spawnParticle(Particle.EXPLOSION_HUGE, event.getLocation(), 0);
+        }
     }
 
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
@@ -371,14 +376,14 @@ public class EntityEventListener implements Listener {
             if (shooter instanceof Player) {
                 PlotPlayer<?> pp = BukkitUtil.adapt((Player) shooter);
                 if (plot == null) {
-                    if (!Permissions.hasPermission(pp, Permission.PERMISSION_PROJECTILE_UNOWNED)) {
+                    if (!Permissions.hasPermission(pp, Permission.PERMISSION_ADMIN_PROJECTILE_UNOWNED)) {
                         entity.remove();
                         event.setCancelled(true);
                     }
                     return;
                 }
                 if (plot.isAdded(pp.getUUID()) || Permissions
-                        .hasPermission(pp, Permission.PERMISSION_PROJECTILE_OTHER)) {
+                        .hasPermission(pp, Permission.PERMISSION_ADMIN_PROJECTILE_OTHER)) {
                     return;
                 }
                 entity.remove();

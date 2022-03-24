@@ -8,7 +8,7 @@
  *                                    | |
  *                                    |_|
  *            PlotSquared plot management system for Minecraft
- *                  Copyright (C) 2021 IntellectualSites
+ *               Copyright (C) 2014 - 2022 IntellectualSites
  *
  *     This program is free software: you can redistribute it and/or modify
  *     it under the terms of the GNU General Public License as published by
@@ -35,6 +35,7 @@ public class FlatRandomCollection<T> extends RandomCollection<T> {
 
     private final T[] values;
 
+    @SuppressWarnings("unchecked")
     public FlatRandomCollection(Map<T, Double> weights, Random random) {
         super(weights, random);
         int max = 0;

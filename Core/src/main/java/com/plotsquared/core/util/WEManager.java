@@ -8,7 +8,7 @@
  *                                    | |
  *                                    |_|
  *            PlotSquared plot management system for Minecraft
- *                  Copyright (C) 2021 IntellectualSites
+ *               Copyright (C) 2014 - 2022 IntellectualSites
  *
  *     This program is free software: you can redistribute it and/or modify
  *     it under the terms of the GNU General Public License as published by
@@ -43,6 +43,9 @@ import java.util.Set;
 import java.util.UUID;
 
 public class WEManager {
+
+    private static final BlockVector3 MIN = BlockVector3.at(Integer.MIN_VALUE, Integer.MIN_VALUE, Integer.MIN_VALUE);
+    private static final BlockVector3 MAX = BlockVector3.at(Integer.MAX_VALUE, Integer.MAX_VALUE, Integer.MAX_VALUE);
 
     public static boolean maskContains(Set<CuboidRegion> mask, int x, int y, int z) {
         for (CuboidRegion region : mask) {
@@ -91,10 +94,7 @@ public class WEManager {
         Location location = player.getLocation();
         String world = location.getWorldName();
         if (!PlotSquared.get().getPlotAreaManager().hasPlotArea(world)) {
-            regions.add(RegionUtil
-                    .createRegion(Integer.MIN_VALUE, Integer.MAX_VALUE, Integer.MIN_VALUE,
-                            Integer.MAX_VALUE
-                    ));
+            regions.add(new CuboidRegion(MIN, MAX));
             return regions;
         }
         PlotArea area = player.getApplicablePlotArea();
@@ -109,7 +109,7 @@ public class WEManager {
                 plot = metaDataAccess.get().orElse(null);
             }
             if (plot != null && (!Settings.Done.RESTRICT_BUILDING || !DoneFlag.isDone(plot)) && (
-                    (allowMember && plot.isAdded(uuid)) || (!allowMember && (plot.isOwner(uuid)) || plot
+                    (allowMember && plot.isAdded(uuid)) || (!allowMember && plot.isOwner(uuid) || plot
                             .getTrusted().contains(uuid))) && !plot.getFlag(NoWorldeditFlag.class)) {
                 for (CuboidRegion region : plot.getRegions()) {
                     BlockVector3 pos1 = region.getMinimumPoint().withY(area.getMinBuildHeight());

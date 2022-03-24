@@ -8,7 +8,7 @@
  *                                    | |
  *                                    |_|
  *            PlotSquared plot management system for Minecraft
- *                  Copyright (C) 2021 IntellectualSites
+ *               Copyright (C) 2014 - 2022 IntellectualSites
  *
  *     This program is free software: you can redistribute it and/or modify
  *     it under the terms of the GNU General Public License as published by
@@ -162,6 +162,7 @@ public class BukkitPlayer extends PlotPlayer<Player> {
         }
     }
 
+    @SuppressWarnings("StringSplitter")
     @Override
     @NonNegative
     public int hasPermissionRange(
@@ -319,7 +320,7 @@ public class BukkitPlayer extends PlotPlayer<Player> {
         if (id == ItemTypes.AIR) {
             // Let's just stop all the discs because why not?
             for (final Sound sound : Arrays.stream(Sound.values())
-                    .filter(sound -> sound.name().contains("DISC")).collect(Collectors.toList())) {
+                    .filter(sound -> sound.name().contains("DISC")).toList()) {
                 player.stopSound(sound);
             }
             // this.player.playEffect(BukkitUtil.getLocation(location), Effect.RECORD_PLAY, Material.AIR);
@@ -331,6 +332,7 @@ public class BukkitPlayer extends PlotPlayer<Player> {
         }
     }
 
+    @SuppressWarnings("deprecation") // Needed for Spigot compatibility
     @Override
     public void kick(final String message) {
         this.player.kickPlayer(message);

@@ -8,7 +8,7 @@
  *                                    | |
  *                                    |_|
  *            PlotSquared plot management system for Minecraft
- *                  Copyright (C) 2021 IntellectualSites
+ *               Copyright (C) 2014 - 2022 IntellectualSites
  *
  *     This program is free software: you can redistribute it and/or modify
  *     it under the terms of the GNU General Public License as published by
@@ -70,7 +70,7 @@ public interface UUIDService {
      * Check whether or not this service can be safely used synchronously
      * without blocking the server for an extended amount of time.
      *
-     * @return True if the service can be used synchronously
+     * @return {@code true} if the service can be used synchronously
      */
     default boolean canBeSynchronous() {
         return false;

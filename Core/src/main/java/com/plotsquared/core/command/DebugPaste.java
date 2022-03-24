@@ -8,7 +8,7 @@
  *                                    | |
  *                                    |_|
  *            PlotSquared plot management system for Minecraft
- *                  Copyright (C) 2021 IntellectualSites
+ *               Copyright (C) 2014 - 2022 IntellectualSites
  *
  *     This program is free software: you can redistribute it and/or modify
  *     it under the terms of the GNU General Public License as published by
@@ -75,8 +75,11 @@ public class DebugPaste extends SubCommand {
             try {
                 StringBuilder b = new StringBuilder();
                 b.append(
-                        "# Welcome to this paste\n# It is meant to provide us at IntellectualSites with better information about your "
-                                + "problem\n\n");
+                        """
+                         # Welcome to this paste
+                         # It is meant to provide us at IntellectualSites with better information about your problem
+                         """
+                );
                 b.append("# PlotSquared Information\n");
                 b.append("PlotSquared Version: ").append(PlotSquared.get().getVersion())
                         .append("\n");
@@ -85,6 +88,8 @@ public class DebugPaste extends SubCommand {
                 b.append("Download ID: ").append(PremiumVerification.getDownloadID()).append("\n");
                 b.append("This PlotSquared version is licensed to the spigot user ")
                         .append(PremiumVerification.getUserID()).append("\n\n");
+                b.append("# WorldEdit implementation:\n");
+                b.append(PlotSquared.platform().worldEditImplementations()).append("\n\n");
                 b.append("# Server Information\n");
                 b.append("Server Version: ").append(PlotSquared.platform().serverImplementation())
                         .append("\n");

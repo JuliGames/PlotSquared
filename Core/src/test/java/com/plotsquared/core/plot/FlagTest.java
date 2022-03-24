@@ -8,7 +8,7 @@
  *                                    | |
  *                                    |_|
  *            PlotSquared plot management system for Minecraft
- *                  Copyright (C) 2021 IntellectualSites
+ *               Copyright (C) 2014 - 2022 IntellectualSites
  *
  *     This program is free software: you can redistribute it and/or modify
  *     it under the terms of the GNU General Public License as published by
@@ -25,17 +25,19 @@
  */
 package com.plotsquared.core.plot;
 
+import com.plotsquared.core.configuration.caption.TranslatableCaption;
 import com.plotsquared.core.database.AbstractDBTest;
 import com.plotsquared.core.database.DBFunc;
+import com.plotsquared.core.plot.flag.FlagParseException;
 import com.plotsquared.core.plot.flag.PlotFlag;
+import com.plotsquared.core.plot.flag.implementations.PlotTitleFlag;
 import com.plotsquared.core.plot.flag.implementations.UseFlag;
 import com.sk89q.worldedit.world.item.ItemType;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.junit.Before;
-import org.junit.Test;
-
-import static org.junit.Assert.assertEquals;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 public class FlagTest {
 
@@ -43,7 +45,7 @@ public class FlagTest {
 
     private ItemType testBlock;
 
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         //EventUtil.manager = new EventUtilTest();
         DBFunc.dbManager = new AbstractDBTest();
@@ -72,7 +74,65 @@ public class FlagTest {
     @Test
     public void testFlagName() {
         String flagName = PlotFlag.getFlagName(UseFlag.class);
-        assertEquals("use", flagName);
+        Assertions.assertEquals("use", flagName);
     }
 
+    @Test
+    public void shouldSuccessfullyParseTitleFlagWithTitleSingularAndSubTitleEmpty() {
+        Assertions.assertDoesNotThrow(() -> {
+            var title = PlotTitleFlag.TITLE_FLAG_DEFAULT.parse("\"test\" \"\"").getValue();
+            Assertions.assertEquals("test", title.title());
+            Assertions.assertEquals("", title.subtitle());
+        }, "Should not throw a FlagParseException");
+    }
+
+    @Test
+    public void shouldSuccessfullyParseTitleFlagWithTitleMultipleWordsAndSubTitleEmpty() {
+        Assertions.assertDoesNotThrow(() -> {
+            var title = PlotTitleFlag.TITLE_FLAG_DEFAULT.parse("\"test hello test\" \"\"").getValue();
+            Assertions.assertEquals("test hello test", title.title());
+            Assertions.assertEquals("", title.subtitle());
+        }, "Should not throw a FlagParseException");
+    }
+
+    @Test
+    public void shouldSuccessfullyParseTitleFlagWithTitleMultipleWordsAndSubTitleMultipleWords() {
+        Assertions.assertDoesNotThrow(() -> {
+            var title = PlotTitleFlag.TITLE_FLAG_DEFAULT.parse("\"test hello test\" \"a very long subtitle\"").getValue();
+            Assertions.assertEquals("test hello test", title.title());
+            Assertions.assertEquals("a very long subtitle", title.subtitle());
+        }, "Should not throw a FlagParseException");
+    }
+
+    @Test
+    public void shouldSuccessfullyParseTitleFlagWithTitleEmptyAndSubTitleSingleWord() {
+        Assertions.assertDoesNotThrow(() -> {
+            var title = PlotTitleFlag.TITLE_FLAG_DEFAULT.parse("\"\" \"single\"").getValue();
+            Assertions.assertEquals(" ", title.title());
+            Assertions.assertEquals("single", title.subtitle());
+        }, "Should not throw a FlagParseException");
+    }
+
+    @Test
+    public void shouldExtractTitleWhenASingleDoubleQuoteAtEndOfTitle() {
+        Assertions.assertDoesNotThrow(() -> {
+            var plotTitle = PlotTitleFlag.TITLE_FLAG_DEFAULT.parse("title\"").getValue();
+            Assertions.assertEquals("title", plotTitle.title());
+            Assertions.assertEquals("", plotTitle.subtitle());
+        }, "Should not throw a FlagParseException");
+    }
+
+    @Test
+    public void shouldThrowFlagParseExceptionWithQuotesGreater4() {
+        var exception = Assertions.assertThrows(
+                FlagParseException.class,
+                () -> PlotTitleFlag.TITLE_FLAG_DEFAULT.parse("\"title\" \"subtitle\" \"more\""),
+                "Needs to throw a FlagParseException"
+        );
+        Assertions.assertTrue(exception.getErrorMessage() instanceof TranslatableCaption);
+        Assertions.assertEquals(
+                "flags.flag_error_title",
+                ((TranslatableCaption) exception.getErrorMessage()).getKey()
+        );
+    }
 }

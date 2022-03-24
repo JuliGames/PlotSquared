@@ -8,7 +8,7 @@
  *                                    | |
  *                                    |_|
  *            PlotSquared plot management system for Minecraft
- *                  Copyright (C) 2021 IntellectualSites
+ *               Copyright (C) 2014 - 2022 IntellectualSites
  *
  *     This program is free software: you can redistribute it and/or modify
  *     it under the terms of the GNU General Public License as published by
@@ -166,7 +166,7 @@ public class SchematicCmd extends SubCommand {
                             0,
                             false,
                             player,
-                            new RunnableVal<Boolean>() {
+                            new RunnableVal<>() {
                                 @Override
                                 public void run(Boolean value) {
                                     SchematicCmd.this.running = false;
@@ -181,8 +181,6 @@ public class SchematicCmd extends SubCommand {
                 });
             }
             case "saveall", "exportall" -> {
-                Location loc = player.getLocation();
-                final Plot plot = loc.getPlotAbs();
                 if (!(player instanceof ConsolePlayer)) {
                     player.sendMessage(TranslatableCaption.of("console.not_console"));
                     return false;

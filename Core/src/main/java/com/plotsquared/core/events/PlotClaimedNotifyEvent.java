@@ -8,7 +8,7 @@
  *                                    | |
  *                                    |_|
  *            PlotSquared plot management system for Minecraft
- *                  Copyright (C) 2021 IntellectualSites
+ *               Copyright (C) 2014 - 2022 IntellectualSites
  *
  *     This program is free software: you can redistribute it and/or modify
  *     it under the terms of the GNU General Public License as published by
@@ -39,6 +39,7 @@ public class PlotClaimedNotifyEvent extends PlotEvent {
      *
      * @param plot Plot that was claimed
      * @param auto If the plot was claimed using /plot auto
+     * @since 6.1.0
      */
     public PlotClaimedNotifyEvent(Plot plot, boolean auto) {
         super(plot);
@@ -49,7 +50,9 @@ public class PlotClaimedNotifyEvent extends PlotEvent {
      * If the plot was claimed using /plot auto
      *
      * @return if claimed with auto
+     * @since 6.1.0
      */
+    @SuppressWarnings("unused")
     public boolean wasAuto() {
         return auto;
     }

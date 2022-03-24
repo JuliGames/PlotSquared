@@ -8,7 +8,7 @@
  *                                    | |
  *                                    |_|
  *            PlotSquared plot management system for Minecraft
- *                  Copyright (C) 2021 IntellectualSites
+ *               Copyright (C) 2014 - 2022 IntellectualSites
  *
  *     This program is free software: you can redistribute it and/or modify
  *     it under the terms of the GNU General Public License as published by
@@ -61,6 +61,7 @@ public class UpdateUtility implements Listener {
         internalVersion = PlotSquared.get().getVersion();
     }
 
+    @SuppressWarnings({"deprecation", "DefaultCharset"}) // Suppress Json deprecation, we can't use features from gson 2.8.1 and newer yet
     public void updateChecker() {
         task = Bukkit.getScheduler().runTaskTimerAsynchronously(this.javaPlugin, () -> {
             try {
@@ -68,7 +69,7 @@ public class UpdateUtility implements Listener {
                         "https://api.spigotmc.org/simple/0.1/index.php?action=getResource&id=77506")
                         .openConnection();
                 connection.setRequestMethod("GET");
-                JsonObject result = (new JsonParser())
+                JsonObject result = new JsonParser()
                         .parse(new JsonReader(new InputStreamReader(connection.getInputStream())))
                         .getAsJsonObject();
                 spigotVersion = result.get("current_version").getAsString();
@@ -91,7 +92,7 @@ public class UpdateUtility implements Listener {
                 notify = false;
                 LOGGER.info("Congratulations! You are running the latest PlotSquared version");
             }
-        }, 0L, Settings.UpdateChecker.POLL_RATE * 60 * 20);
+        }, 0L, (long) Settings.UpdateChecker.POLL_RATE * 60 * 20);
     }
 
     private void cancelTask() {

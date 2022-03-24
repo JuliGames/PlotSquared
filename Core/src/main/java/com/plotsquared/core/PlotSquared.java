@@ -8,7 +8,7 @@
  *                                    | |
  *                                    |_|
  *            PlotSquared plot management system for Minecraft
- *                  Copyright (C) 2021 IntellectualSites
+ *               Copyright (C) 2014 - 2022 IntellectualSites
  *
  *     This program is free software: you can redistribute it and/or modify
  *     it under the terms of the GNU General Public License as published by
@@ -306,7 +306,7 @@ public class PlotSquared {
      *
      * @param version  First version
      * @param version2 Second version
-     * @return true if `version` is &gt;= `version2`
+     * @return {@code true} if `version` is &gt;= `version2`
      */
     public boolean checkVersion(
             final int[] version,
@@ -338,10 +338,13 @@ public class PlotSquared {
 
     /**
      * Add a global reference to a plot world.
+     * <p>
+     * You can remove the reference by calling {@link #removePlotArea(PlotArea)}
+     * </p>
      *
      * @param plotArea the {@link PlotArea} to add.
-     * @see #removePlotArea(PlotArea) To remove the reference
      */
+    @SuppressWarnings("unchecked")
     public void addPlotArea(final @NonNull PlotArea plotArea) {
         HashMap<PlotId, Plot> plots;
         if (plots_tmp == null || (plots = plots_tmp.remove(plotArea.toString())) == null) {
@@ -556,6 +559,7 @@ public class PlotSquared {
      *
      * @param input an array of plots to sort
      */
+    @SuppressWarnings("unchecked")
     private void sortPlotsByHash(final @NonNull Plot @NonNull [] input) {
         List<Plot>[] bucket = new ArrayList[32];
         Arrays.fill(bucket, new ArrayList<>());
@@ -696,20 +700,12 @@ public class PlotSquared {
         ArrayList<Plot> toReturn = new ArrayList<>(plots.size());
         for (PlotArea area : areas) {
             switch (type) {
-                case CREATION_DATE:
-                    toReturn.addAll(sortPlotsByTemp(map.get(area)));
-                    break;
-                case CREATION_DATE_TIMESTAMP:
-                    toReturn.addAll(sortPlotsByTimestamp(map.get(area)));
-                    break;
-                case DISTANCE_FROM_ORIGIN:
-                    toReturn.addAll(sortPlotsByHash(map.get(area)));
-                    break;
-                case LAST_MODIFIED:
-                    toReturn.addAll(sortPlotsByModified(map.get(area)));
-                    break;
-                default:
-                    break;
+                case CREATION_DATE -> toReturn.addAll(sortPlotsByTemp(map.get(area)));
+                case CREATION_DATE_TIMESTAMP -> toReturn.addAll(sortPlotsByTimestamp(map.get(area)));
+                case DISTANCE_FROM_ORIGIN -> toReturn.addAll(sortPlotsByHash(map.get(area)));
+                case LAST_MODIFIED -> toReturn.addAll(sortPlotsByModified(map.get(area)));
+                default -> {
+                }
             }
         }
         return toReturn;
@@ -739,7 +735,7 @@ public class PlotSquared {
      *
      * @param plot      the plot to remove
      * @param callEvent If to call an event about the plot being removed
-     * @return true if plot existed | false if it didn't
+     * @return {@code true} if plot existed | {@code false} if it didn't
      */
     public boolean removePlot(
             final @NonNull Plot plot,
@@ -757,6 +753,9 @@ public class PlotSquared {
             int this_max = Math.max(Math.abs(plot.getId().getX()), Math.abs(plot.getId().getY()));
             if (this_max < last_max) {
                 plot.getArea().setMeta("lastPlot", plot.getId());
+            }
+            if (callEvent) {
+                eventDispatcher.callPostDelete(plot);
             }
             return true;
         }
@@ -1021,8 +1020,8 @@ public class PlotSquared {
             // save configuration
 
             final List<String> validArguments = Arrays
-                    .asList("s=", "size=", "g=", "gap=", "h=", "height=", "f=", "floor=", "m=", "main=",
-                            "w=", "wall=", "b=", "border="
+                    .asList("s=", "size=", "g=", "gap=", "h=", "height=", "minh=", "minheight=", "maxh=", "maxheight=",
+                            "f=", "floor=", "m=", "main=", "w=", "wall=", "b=", "border="
                     );
 
             // Calculate the number of expected arguments
@@ -1101,6 +1100,14 @@ public class PlotSquared {
                                     ConfigurationUtil.INTEGER.parseString(value).shortValue()
                             );
                         }
+                        case "minh", "minheight" -> this.worldConfiguration.set(
+                                base + "world.min_gen_height",
+                                ConfigurationUtil.INTEGER.parseString(value).shortValue()
+                        );
+                        case "maxh", "maxheight" -> this.worldConfiguration.set(
+                                base + "world.max_gen_height",
+                                ConfigurationUtil.INTEGER.parseString(value).shortValue()
+                        );
                         case "f", "floor" -> this.worldConfiguration.set(
                                 base + "plot.floor",
                                 ConfigurationUtil.BLOCK_BUCKET.parseString(value).toString()
@@ -1479,7 +1486,7 @@ public class PlotSquared {
      *
      * @param world            World name
      * @param chunkCoordinates Chunk coordinates
-     * @return True if the chunk uses non-standard generation, false if not
+     * @return {@code true} if the chunk uses non-standard generation, {@code false} if not
      */
     public boolean isNonStandardGeneration(
             final @NonNull String world,
@@ -1524,10 +1531,12 @@ public class PlotSquared {
     /**
      * Get the caption map belonging to a namespace. If none exists, a dummy
      * caption map will be returned.
+     * <p>
+     * You can register a caption map by calling {@link #registerCaptionMap(String, CaptionMap)}
+     * </p>
      *
      * @param namespace Namespace
      * @return Map instance
-     * @see #registerCaptionMap(String, CaptionMap) To register a caption map
      */
     public @NonNull CaptionMap getCaptionMap(final @NonNull String namespace) {
         return this.captionMaps.computeIfAbsent(
@@ -1537,7 +1546,7 @@ public class PlotSquared {
     }
 
     /**
-     * Register a caption map. The namespace needs be equal to the namespace used for
+     * Register a caption map. The namespace needs to be equal to the namespace used for
      * the {@link TranslatableCaption}s inside the map.
      *
      * @param namespace  Namespace

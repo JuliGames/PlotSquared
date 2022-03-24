@@ -8,7 +8,7 @@
  *                                    | |
  *                                    |_|
  *            PlotSquared plot management system for Minecraft
- *                  Copyright (C) 2021 IntellectualSites
+ *               Copyright (C) 2014 - 2022 IntellectualSites
  *
  *     This program is free software: you can redistribute it and/or modify
  *     it under the terms of the GNU General Public License as published by
@@ -25,7 +25,6 @@
  */
 package com.plotsquared.core.plot.comment;
 
-import com.google.common.annotations.Beta;
 import com.google.inject.TypeLiteral;
 import com.plotsquared.core.configuration.Settings;
 import com.plotsquared.core.configuration.caption.StaticCaption;
@@ -44,7 +43,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
-@Beta
 public class CommentManager {
 
     public static final HashMap<String, CommentInbox> inboxes = new HashMap<>();

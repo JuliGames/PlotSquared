@@ -8,7 +8,7 @@
  *                                    | |
  *                                    |_|
  *            PlotSquared plot management system for Minecraft
- *                  Copyright (C) 2021 IntellectualSites
+ *               Copyright (C) 2014 - 2022 IntellectualSites
  *
  *     This program is free software: you can redistribute it and/or modify
  *     it under the terms of the GNU General Public License as published by
@@ -180,12 +180,12 @@ public class Trim extends SubCommand {
                             int bx = cbx << 4;
                             int bz = cbz << 4;
                             CuboidRegion region =
-                                    RegionUtil.createRegion(bx, bx + 511, bz, bz + 511);
+                                    RegionUtil.createRegion(bx, bx + 511, 0, 0, bz, bz + 511);
                             for (Plot plot : PlotQuery.newQuery().inWorld(world)) {
                                 Location bot = plot.getBottomAbs();
                                 Location top = plot.getExtendedTopAbs();
                                 CuboidRegion plotReg = RegionUtil
-                                        .createRegion(bot.getX(), top.getX(), bot.getZ(), top.getZ());
+                                        .createRegion(bot.getX(), top.getX(), 0, 0, bot.getZ(), top.getZ());
                                 if (!RegionUtil.intersects(region, plotReg)) {
                                     continue;
                                 }

@@ -8,7 +8,7 @@
  *                                    | |
  *                                    |_|
  *            PlotSquared plot management system for Minecraft
- *                  Copyright (C) 2021 IntellectualSites
+ *               Copyright (C) 2014 - 2022 IntellectualSites
  *
  *     This program is free software: you can redistribute it and/or modify
  *     it under the terms of the GNU General Public License as published by
@@ -52,7 +52,7 @@ import java.util.concurrent.TimeoutException;
 
 @CommandDeclaration(command = "deny",
         aliases = {"d", "ban"},
-        usage = "/plot deny <player",
+        usage = "/plot deny <player>",
         category = CommandCategory.SETTINGS,
         requiredType = RequiredType.PLAYER)
 public class Deny extends SubCommand {
@@ -125,7 +125,7 @@ public class Deny extends SubCommand {
                     } else if (plot.getDenied().contains(uuid)) {
                         player.sendMessage(
                                 TranslatableCaption.of("member.already_added"),
-                                Template.of("player", PlayerManager.getName(uuid))
+                                Template.of("player", PlayerManager.resolveName(uuid).getComponent(player))
                         );
                         return;
                     } else {

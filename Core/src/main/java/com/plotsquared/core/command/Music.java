@@ -8,7 +8,7 @@
  *                                    | |
  *                                    |_|
  *            PlotSquared plot management system for Minecraft
- *                  Copyright (C) 2021 IntellectualSites
+ *               Copyright (C) 2014 - 2022 IntellectualSites
  *
  *     This program is free software: you can redistribute it and/or modify
  *     it under the terms of the GNU General Public License as published by
@@ -38,10 +38,13 @@ import com.plotsquared.core.plot.PlotInventory;
 import com.plotsquared.core.plot.PlotItemStack;
 import com.plotsquared.core.plot.flag.PlotFlag;
 import com.plotsquared.core.plot.flag.implementations.MusicFlag;
+import com.plotsquared.core.util.EventDispatcher;
 import com.plotsquared.core.util.InventoryUtil;
 import com.plotsquared.core.util.Permissions;
+import com.sk89q.worldedit.world.item.ItemType;
 import com.sk89q.worldedit.world.item.ItemTypes;
 import net.kyori.adventure.text.minimessage.Template;
+import org.checkerframework.checker.nullness.qual.NonNull;
 
 import javax.annotation.Nullable;
 import java.util.Arrays;
@@ -58,14 +61,17 @@ public class Music extends SubCommand {
     private static final Collection<String> DISCS = Arrays
             .asList("music_disc_13", "music_disc_cat", "music_disc_blocks", "music_disc_chirp",
                     "music_disc_far", "music_disc_mall", "music_disc_mellohi", "music_disc_stal",
-                    "music_disc_strad", "music_disc_ward", "music_disc_11", "music_disc_wait", "music_disc_pigstep"
+                    "music_disc_strad", "music_disc_ward", "music_disc_11", "music_disc_wait", "music_disc_otherside",
+                    "music_disc_pigstep"
             );
 
     private final InventoryUtil inventoryUtil;
+    private final EventDispatcher eventDispatcher;
 
     @Inject
-    public Music(final @Nullable InventoryUtil inventoryUtil) {
+    public Music(final @Nullable InventoryUtil inventoryUtil, final @NonNull EventDispatcher eventDispatcher) {
         this.inventoryUtil = inventoryUtil;
+        this.eventDispatcher = eventDispatcher;
     }
 
     @Override
@@ -74,6 +80,10 @@ public class Music extends SubCommand {
         final Plot plot = location.getPlotAbs();
         if (plot == null) {
             player.sendMessage(TranslatableCaption.of("errors.not_in_plot"));
+            return false;
+        }
+        if (!plot.hasOwner()) {
+            player.sendMessage(TranslatableCaption.of("info.plot_unowned"));
             return false;
         }
         if (!plot.isAdded(player.getUUID()) && !Permissions
@@ -99,7 +109,7 @@ public class Music extends SubCommand {
                 if (item.getType() == ItemTypes.BEDROCK) {
                     PlotFlag<?, ?> plotFlag = plot.getFlagContainer().getFlag(MusicFlag.class)
                             .createFlagInstance(item.getType());
-                    PlotFlagRemoveEvent event = new PlotFlagRemoveEvent(plotFlag, plot);
+                    PlotFlagRemoveEvent event = eventDispatcher.callFlagRemove(plotFlag, plot);
                     if (event.getEventResult() == Result.DENY) {
                         getPlayer().sendMessage(
                                 TranslatableCaption.of("events.event_denied"),
@@ -116,7 +126,7 @@ public class Music extends SubCommand {
                 } else if (item.getName().toLowerCase(Locale.ENGLISH).contains("disc")) {
                     PlotFlag<?, ?> plotFlag = plot.getFlagContainer().getFlag(MusicFlag.class)
                             .createFlagInstance(item.getType());
-                    PlotFlagAddEvent event = new PlotFlagAddEvent(plotFlag, plot);
+                    PlotFlagAddEvent event = eventDispatcher.callFlagAdd(plotFlag, plot);
                     if (event.getEventResult() == Result.DENY) {
                         getPlayer().sendMessage(
                                 TranslatableCaption.of("events.event_denied"),
@@ -139,8 +149,14 @@ public class Music extends SubCommand {
         for (final String disc : DISCS) {
             final String name = String.format("<gold>%s</gold>", disc);
             final String[] lore = {TranslatableCaption.of("plotjukebox.click_to_play").getComponent(player)};
-            final PlotItemStack item = new PlotItemStack(disc, 1, name, lore);
-            inv.setItem(index++, item);
+            ItemType type = ItemTypes.get(disc);
+            if (type == null) {
+                continue;
+            }
+            final PlotItemStack item = new PlotItemStack(type, 1, name, lore);
+            if (inv.setItemChecked(index, item)) {
+                index++;
+            }
         }
 
         // Always add the cancel button

@@ -8,7 +8,7 @@
  *                                    | |
  *                                    |_|
  *            PlotSquared plot management system for Minecraft
- *                  Copyright (C) 2021 IntellectualSites
+ *               Copyright (C) 2014 - 2022 IntellectualSites
  *
  *     This program is free software: you can redistribute it and/or modify
  *     it under the terms of the GNU General Public License as published by
@@ -57,12 +57,16 @@ public enum TeleportCause {
     PLUGIN,
     UNKNOWN;
 
+    /**
+     * @since 6.1.0
+     */
     public static final class CauseSets {
 
         public static final Set<TeleportCause> COMMAND = Sets.immutableEnumSet(EnumSet.range(
                 TeleportCause.COMMAND,
                 TeleportCause.COMMAND_VISIT
         ));
+        @SuppressWarnings("unused")
         public static final Set<TeleportCause> PLUGIN = Sets.immutableEnumSet(EnumSet.range(
                 TeleportCause.DEATH,
                 TeleportCause.PLUGIN

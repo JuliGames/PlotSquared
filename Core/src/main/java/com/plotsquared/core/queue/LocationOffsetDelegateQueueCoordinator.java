@@ -8,7 +8,7 @@
  *                                    | |
  *                                    |_|
  *            PlotSquared plot management system for Minecraft
- *                  Copyright (C) 2021 IntellectualSites
+ *               Copyright (C) 2014 - 2022 IntellectualSites
  *
  *     This program is free software: you can redistribute it and/or modify
  *     it under the terms of the GNU General Public License as published by
@@ -87,11 +87,14 @@ public class LocationOffsetDelegateQueueCoordinator extends DelegateQueueCoordin
 
     @Override
     public boolean setBiome(int x, int z, @NonNull BiomeType biome) {
-        boolean result = true;
-        for (int y = 0; y < 256; y++) {
-            result &= this.setBiome(x, y, z, biome);
+        try {
+            if (canPlace[x - blockX][z - blockZ]) {
+                return super.setBiome(x, z, biome);
+            }
+        } catch (final Exception e) {
+            throw e;
         }
-        return result;
+        return false;
     }
 
     @Override

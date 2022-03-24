@@ -5,8 +5,8 @@ dependencies {
     compileOnlyApi(libs.checkerqual)
 
     // Minecraft expectations
-    compileOnlyApi(libs.guava)
     compileOnlyApi(libs.gson)
+    compileOnly(libs.guava)
 
     // Platform expectations
     compileOnlyApi(libs.snakeyaml)
@@ -22,7 +22,7 @@ dependencies {
     api(libs.guiceassistedinject) {
         exclude("com.google.inject", "guice")
     }
-    compileOnlyApi(libs.findbugs)
+    api(libs.findbugs)
 
     // Plugins
     compileOnly(libs.worldeditCore) {
@@ -40,9 +40,7 @@ dependencies {
     // Other libraries
     api(libs.prtree)
     api(libs.aopalliance)
-    api(libs.pipeline) {
-        exclude(group = "com.google.guava")
-    }
+    api(libs.cloudServices)
     api(libs.arkitektonika)
     api(libs.paster)
 }
@@ -54,5 +52,15 @@ tasks.processResources {
                 "commit" to rootProject.grgit.head().abbreviatedId,
                 "date" to rootProject.grgit.head().dateTime.format(DateTimeFormatter.ofPattern("yy.MM.dd"))
         )
+    }
+}
+
+tasks {
+    withType<Javadoc> {
+        val opt = options as StandardJavadocDocletOptions
+        opt.links("https://docs.enginehub.org/javadoc/com.sk89q.worldedit/worldedit-core/" + libs.worldeditCore.get().versionConstraint.toString())
+        opt.links("https://jd.adventure.kyori.net/api/" + libs.adventure.get().versionConstraint.toString())
+        opt.links("https://google.github.io/guice/api-docs/" + libs.guice.get().versionConstraint.toString() + "/javadoc/")
+        opt.links("https://checkerframework.org/api/")
     }
 }

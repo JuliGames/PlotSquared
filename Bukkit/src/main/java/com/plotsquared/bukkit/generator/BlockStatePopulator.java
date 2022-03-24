@@ -8,7 +8,7 @@
  *                                    | |
  *                                    |_|
  *            PlotSquared plot management system for Minecraft
- *                  Copyright (C) 2021 IntellectualSites
+ *               Copyright (C) 2014 - 2022 IntellectualSites
  *
  *     This program is free software: you can redistribute it and/or modify
  *     it under the terms of the GNU General Public License as published by
@@ -65,7 +65,10 @@ final class BlockStatePopulator extends BlockPopulator {
             return;
         }
         final ChunkWrapper wrap = new ChunkWrapper(area.getWorldName(), source.getX(), source.getZ());
-        final ScopedQueueCoordinator chunk = this.queue.getForChunk(wrap.x, wrap.z);
+        final ScopedQueueCoordinator chunk = this.queue.getForChunk(wrap.x, wrap.z,
+                com.plotsquared.bukkit.util.BukkitWorld.getMinWorldHeight(world),
+                com.plotsquared.bukkit.util.BukkitWorld.getMaxWorldHeight(world) - 1
+        );
         if (this.plotGenerator.populateChunk(chunk, area)) {
             this.queue.enqueue();
         }

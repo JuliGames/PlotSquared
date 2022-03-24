@@ -8,7 +8,7 @@
  *                                    | |
  *                                    |_|
  *            PlotSquared plot management system for Minecraft
- *                  Copyright (C) 2021 IntellectualSites
+ *               Copyright (C) 2014 - 2022 IntellectualSites
  *
  *     This program is free software: you can redistribute it and/or modify
  *     it under the terms of the GNU General Public License as published by
@@ -65,6 +65,7 @@ public class ComponentPreset implements ConfigurationSerializable {
         this.icon = icon;
     }
 
+    @SuppressWarnings("unchecked")
     public static ComponentPreset deserialize(final @NonNull Map<String, Object> map) {
         final ClassicPlotManagerComponent classicPlotManagerComponent = ClassicPlotManagerComponent
                 .fromString(map.getOrDefault("component", "").toString()).orElseThrow(() ->

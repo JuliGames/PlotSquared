@@ -8,7 +8,7 @@
  *                                    | |
  *                                    |_|
  *            PlotSquared plot management system for Minecraft
- *                  Copyright (C) 2021 IntellectualSites
+ *               Copyright (C) 2014 - 2022 IntellectualSites
  *
  *     This program is free software: you can redistribute it and/or modify
  *     it under the terms of the GNU General Public License as published by
@@ -28,6 +28,7 @@ package com.plotsquared.core.generator;
 import com.plotsquared.core.configuration.ConfigurationNode;
 import com.plotsquared.core.configuration.ConfigurationSection;
 import com.plotsquared.core.configuration.ConfigurationUtil;
+import com.plotsquared.core.configuration.Settings;
 import com.plotsquared.core.configuration.caption.TranslatableCaption;
 import com.plotsquared.core.configuration.file.YamlConfiguration;
 import com.plotsquared.core.inject.annotations.WorldConfig;
@@ -126,16 +127,24 @@ public abstract class ClassicPlotWorld extends SquarePlotWorld {
     public void loadConfiguration(ConfigurationSection config) {
         super.loadConfiguration(config);
         this.PLOT_BEDROCK = config.getBoolean("plot.bedrock");
-        this.PLOT_HEIGHT = Math.min(255, config.getInt("plot.height"));
+        this.PLOT_HEIGHT = Math.min(getMaxGenHeight(), config.getInt("plot.height"));
         this.MAIN_BLOCK = new BlockBucket(config.getString("plot.filling"));
         this.TOP_BLOCK = new BlockBucket(config.getString("plot.floor"));
         this.WALL_BLOCK = new BlockBucket(config.getString("wall.block"));
-        this.ROAD_HEIGHT = Math.min(255, config.getInt("road.height"));
+        this.ROAD_HEIGHT = Math.min(getMaxGenHeight(), config.getInt("road.height"));
         this.ROAD_BLOCK = new BlockBucket(config.getString("road.block"));
         this.WALL_FILLING = new BlockBucket(config.getString("wall.filling"));
-        this.WALL_HEIGHT = Math.min(254, config.getInt("wall.height"));
-        this.CLAIMED_WALL_BLOCK = new BlockBucket(config.getString("wall.block_claimed"));
         this.PLACE_TOP_BLOCK = config.getBoolean("wall.place_top_block");
+        this.WALL_HEIGHT = Math.min(getMaxGenHeight() - (PLACE_TOP_BLOCK ? 1 : 0), config.getInt("wall.height"));
+        this.CLAIMED_WALL_BLOCK = new BlockBucket(config.getString("wall.block_claimed"));
+    }
+
+    int schematicStartHeight() {
+        int plotRoadMin = Math.min(PLOT_HEIGHT, ROAD_HEIGHT);
+        if (!Settings.Schematics.USE_WALL_IN_ROAD_SCHEM_HEIGHT) {
+            return plotRoadMin;
+        }
+        return Math.min(WALL_HEIGHT, plotRoadMin);
     }
 
 }

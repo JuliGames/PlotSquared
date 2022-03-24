@@ -8,7 +8,7 @@
  *                                    | |
  *                                    |_|
  *            PlotSquared plot management system for Minecraft
- *                  Copyright (C) 2021 IntellectualSites
+ *               Copyright (C) 2014 - 2022 IntellectualSites
  *
  *     This program is free software: you can redistribute it and/or modify
  *     it under the terms of the GNU General Public License as published by
@@ -48,7 +48,7 @@ public class Confirm extends SubCommand {
             player.sendMessage(TranslatableCaption.of("confirm.expired_confirm"));
             return false;
         }
-        TaskManager.runTaskAsync(command.command);
+        TaskManager.runTask(command.command);
         return true;
     }
 

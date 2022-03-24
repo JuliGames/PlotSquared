@@ -8,7 +8,7 @@
  *                                    | |
  *                                    |_|
  *            PlotSquared plot management system for Minecraft
- *                  Copyright (C) 2021 IntellectualSites
+ *               Copyright (C) 2014 - 2022 IntellectualSites
  *
  *     This program is free software: you can redistribute it and/or modify
  *     it under the terms of the GNU General Public License as published by
@@ -53,7 +53,7 @@ public abstract class MetaDataAccess<T> implements AutoCloseable {
         this.lockAccess = lockAccess;
     }
 
-    @SuppressWarnings("ALL")
+    @SuppressWarnings("unchecked")
     private static <E extends Throwable> void sneakyThrow(final Throwable e) throws E {
         throw (E) e;
     }

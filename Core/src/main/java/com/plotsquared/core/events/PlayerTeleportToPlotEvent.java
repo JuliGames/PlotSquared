@@ -8,7 +8,7 @@
  *                                    | |
  *                                    |_|
  *            PlotSquared plot management system for Minecraft
- *                  Copyright (C) 2021 IntellectualSites
+ *               Copyright (C) 2014 - 2022 IntellectualSites
  *
  *     This program is free software: you can redistribute it and/or modify
  *     it under the terms of the GNU General Public License as published by
@@ -42,7 +42,7 @@ public class PlayerTeleportToPlotEvent extends PlotPlayerEvent implements Cancel
      * @deprecated use {@link PlayerTeleportToPlotEvent#PlayerTeleportToPlotEvent(PlotPlayer, Location, Plot, TeleportCause)}.
      * You should not be creating events in the first place.
      */
-    @Deprecated(forRemoval = true)
+    @Deprecated(forRemoval = true, since = "6.1.0")
     public PlayerTeleportToPlotEvent(PlotPlayer<?> player, Location from, Plot plot) {
         this(player, from, plot, TeleportCause.UNKNOWN);
     }
@@ -54,6 +54,7 @@ public class PlayerTeleportToPlotEvent extends PlotPlayerEvent implements Cancel
      * @param from   Start location
      * @param plot   Plot to which the player was teleported
      * @param cause  Why the teleport is being completed
+     * @since 6.1.0
      */
     public PlayerTeleportToPlotEvent(PlotPlayer<?> player, Location from, Plot plot, TeleportCause cause) {
         super(player, plot);
@@ -65,6 +66,7 @@ public class PlayerTeleportToPlotEvent extends PlotPlayerEvent implements Cancel
      * Get the teleport cause
      *
      * @return TeleportCause
+     * @since 6.1.0
      */
     public TeleportCause getCause() {
         return cause;

@@ -8,7 +8,7 @@
  *                                    | |
  *                                    |_|
  *            PlotSquared plot management system for Minecraft
- *                  Copyright (C) 2021 IntellectualSites
+ *               Copyright (C) 2014 - 2022 IntellectualSites
  *
  *     This program is free software: you can redistribute it and/or modify
  *     it under the terms of the GNU General Public License as published by
@@ -25,16 +25,12 @@
  */
 package com.plotsquared.core.plot;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 import java.util.Arrays;
 import java.util.List;
 import java.util.NoSuchElementException;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertThrows;
-import static org.junit.Assert.assertTrue;
 
 public class PlotRangeIteratorTest {
 
@@ -43,10 +39,10 @@ public class PlotRangeIteratorTest {
         // an iterator that should only contain the given plot
         PlotId id = PlotId.of(3, 7);
         PlotId.PlotRangeIterator range = PlotId.PlotRangeIterator.range(id, id);
-        assertTrue(range.hasNext());
-        assertEquals(id, range.next());
-        assertFalse(range.hasNext());
-        assertThrows(NoSuchElementException.class, range::next);
+        Assertions.assertTrue(range.hasNext());
+        Assertions.assertEquals(id, range.next());
+        Assertions.assertFalse(range.hasNext());
+        Assertions.assertThrows(NoSuchElementException.class, range::next);
     }
 
     // the tests below assume a specific order (first increasing y, then increasing x)
@@ -61,11 +57,11 @@ public class PlotRangeIteratorTest {
         List<PlotId> all = Arrays.asList(id00, id01, id10, id11);
         PlotId.PlotRangeIterator range = PlotId.PlotRangeIterator.range(id00, id11);
         for (PlotId id : all) {
-            assertTrue(range.hasNext());
-            assertEquals(id, range.next());
+            Assertions.assertTrue(range.hasNext());
+            Assertions.assertEquals(id, range.next());
         }
-        assertFalse(range.hasNext());
-        assertThrows(NoSuchElementException.class, range::next);
+        Assertions.assertFalse(range.hasNext());
+        Assertions.assertThrows(NoSuchElementException.class, range::next);
     }
 
     @Test
@@ -80,11 +76,11 @@ public class PlotRangeIteratorTest {
         List<PlotId> all = Arrays.asList(id00, id01, id02, id10, id11, id12);
         PlotId.PlotRangeIterator range = PlotId.PlotRangeIterator.range(id00, id12);
         for (PlotId id : all) {
-            assertTrue(range.hasNext());
-            assertEquals(id, range.next());
+            Assertions.assertTrue(range.hasNext());
+            Assertions.assertEquals(id, range.next());
         }
-        assertFalse(range.hasNext());
-        assertThrows(NoSuchElementException.class, range::next);
+        Assertions.assertFalse(range.hasNext());
+        Assertions.assertThrows(NoSuchElementException.class, range::next);
     }
 
     @Test
@@ -99,11 +95,23 @@ public class PlotRangeIteratorTest {
         List<PlotId> all = Arrays.asList(id00, id01, id10, id11, id20, id21);
         PlotId.PlotRangeIterator range = PlotId.PlotRangeIterator.range(id00, id21);
         for (PlotId id : all) {
-            assertTrue(range.hasNext());
-            assertEquals(id, range.next());
+            Assertions.assertTrue(range.hasNext());
+            Assertions.assertEquals(id, range.next());
         }
-        assertFalse(range.hasNext());
-        assertThrows(NoSuchElementException.class, range::next);
+        Assertions.assertFalse(range.hasNext());
+        Assertions.assertThrows(NoSuchElementException.class, range::next);
     }
 
+    @Test
+    public void resetYOfIteratorToStart() {
+        PlotId id00 = PlotId.of(0, 1);
+        PlotId id01 = PlotId.of(1, 2);
+        PlotId.PlotRangeIterator range = PlotId.PlotRangeIterator.range(id00, id01);
+
+        for (int i = 0; i < 4; i++) {
+            Assertions.assertNotEquals(0, range.next().getY());
+        }
+        Assertions.assertFalse(range.hasNext());
+        Assertions.assertThrows(NoSuchElementException.class, range::next);
+    }
 }

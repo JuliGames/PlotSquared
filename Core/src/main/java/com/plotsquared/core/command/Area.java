@@ -8,7 +8,7 @@
  *                                    | |
  *                                    |_|
  *            PlotSquared plot management system for Minecraft
- *                  Copyright (C) 2021 IntellectualSites
+ *               Copyright (C) 2014 - 2022 IntellectualSites
  *
  *     This program is free software: you can redistribute it and/or modify
  *     it under the terms of the GNU General Public License as published by
@@ -29,6 +29,7 @@ import com.google.inject.Inject;
 import com.plotsquared.core.PlotSquared;
 import com.plotsquared.core.configuration.ConfigurationSection;
 import com.plotsquared.core.configuration.ConfigurationUtil;
+import com.plotsquared.core.configuration.Settings;
 import com.plotsquared.core.configuration.caption.CaptionHolder;
 import com.plotsquared.core.configuration.caption.Templates;
 import com.plotsquared.core.configuration.caption.TranslatableCaption;
@@ -74,6 +75,7 @@ import com.sk89q.worldedit.function.operation.Operations;
 import com.sk89q.worldedit.math.BlockVector3;
 import com.sk89q.worldedit.regions.CuboidRegion;
 import com.sk89q.worldedit.regions.Region;
+import com.sk89q.worldedit.world.World;
 import net.kyori.adventure.text.minimessage.Template;
 import org.checkerframework.checker.nullness.qual.NonNull;
 
@@ -190,11 +192,12 @@ public class Area extends SubCommand {
                 final BlockVector3 playerSelectionMin = playerSelectedRegion.getMinimumPoint();
                 final BlockVector3 playerSelectionMax = playerSelectedRegion.getMaximumPoint();
                 // Create a new selection that spans the entire vertical range of the world
+                World world = playerSelectedRegion.getWorld();
                 final CuboidRegion selectedRegion =
                         new CuboidRegion(
                                 playerSelectedRegion.getWorld(),
-                                BlockVector3.at(playerSelectionMin.getX(), 0, playerSelectionMin.getZ()),
-                                BlockVector3.at(playerSelectionMax.getX(), 255, playerSelectionMax.getZ())
+                                BlockVector3.at(playerSelectionMin.getX(), world.getMinY(), playerSelectionMin.getZ()),
+                                BlockVector3.at(playerSelectionMax.getX(), world.getMaxY(), playerSelectionMax.getZ())
                         );
                 // There's only one plot in the area...
                 final PlotId plotId = PlotId.of(1, 1);
@@ -222,7 +225,7 @@ public class Area extends SubCommand {
                 hybridPlotWorld.setAllowSigns(false);
                 final File parentFile = FileUtils.getFile(
                         PlotSquared.platform().getDirectory(),
-                        "schematics" + File.separator + "GEN_ROAD_SCHEMATIC" + File.separator + hybridPlotWorld.getWorldName() + File.separator
+                        Settings.Paths.SCHEMATICS + File.separator + "GEN_ROAD_SCHEMATIC" + File.separator + hybridPlotWorld.getWorldName() + File.separator
                                 + hybridPlotWorld.getId()
                 );
                 if (!parentFile.exists() && !parentFile.mkdirs()) {
@@ -277,9 +280,9 @@ public class Area extends SubCommand {
                     if (offsetZ != 0) {
                         this.worldConfiguration.set(path + ".road.offset.z", offsetZ);
                     }
-                    final String world = this.setupUtils.setupWorld(singleBuilder);
-                    if (this.worldUtil.isWorld(world)) {
-                        PlotSquared.get().loadWorld(world, null);
+                    final String worldName = this.setupUtils.setupWorld(singleBuilder);
+                    if (this.worldUtil.isWorld(worldName)) {
+                        PlotSquared.get().loadWorld(worldName, null);
                         player.sendMessage(TranslatableCaption.of("single.single_area_created"));
                     } else {
                         player.sendMessage(
@@ -368,7 +371,8 @@ public class Area extends SubCommand {
                                 int lower = (area.ROAD_WIDTH & 1) == 0 ? area.ROAD_WIDTH / 2 - 1 : area.ROAD_WIDTH / 2;
                                 final int offsetX = bx - (area.ROAD_WIDTH == 0 ? 0 : lower);
                                 final int offsetZ = bz - (area.ROAD_WIDTH == 0 ? 0 : lower);
-                                final CuboidRegion region = RegionUtil.createRegion(bx, tx, bz, tz);
+                                // Height doesn't matter for this region
+                                final CuboidRegion region = RegionUtil.createRegion(bx, tx, 0, 0, bz, tz);
                                 final Set<PlotArea> areas = this.plotAreaManager.getPlotAreasSet(area.getWorldName(), region);
                                 if (!areas.isEmpty()) {
                                     player.sendMessage(

@@ -8,7 +8,7 @@
  *                                    | |
  *                                    |_|
  *            PlotSquared plot management system for Minecraft
- *                  Copyright (C) 2021 IntellectualSites
+ *               Copyright (C) 2014 - 2022 IntellectualSites
  *
  *     This program is free software: you can redistribute it and/or modify
  *     it under the terms of the GNU General Public License as published by
@@ -84,7 +84,7 @@ public final class TabCompletions {
      * @return List of completions
      * @deprecated In favor {@link #completePlayers(PlotPlayer, String, List)}
      */
-    @Deprecated(forRemoval = true)
+    @Deprecated(forRemoval = true, since = "6.1.3")
     public static @NonNull List<Command> completePlayers(
             final @NonNull String input,
             final @NonNull List<String> existing
@@ -100,6 +100,7 @@ public final class TabCompletions {
      * @param issuer   The player who issued the tab completion
      * @param existing Players that should not be included in completions
      * @return List of completions
+     * @since 6.1.3
      */
     public static @NonNull List<Command> completePlayers(
             final @NonNull PlotPlayer<?> issuer,
@@ -119,7 +120,7 @@ public final class TabCompletions {
      *
      * @deprecated In favor {@link #completeAddedPlayers(PlotPlayer, Plot, String, List)}
      */
-    @Deprecated(forRemoval = true)
+    @Deprecated(forRemoval = true, since = "6.1.3")
     public static @NonNull List<Command> completeAddedPlayers(
             final @NonNull Plot plot,
             final @NonNull String input, final @NonNull List<String> existing
@@ -135,6 +136,7 @@ public final class TabCompletions {
      * @param input    Command input
      * @param existing Players that should not be included in completions
      * @return List of completions
+     * @since 6.1.3
      */
     public static @NonNull List<Command> completeAddedPlayers(
             final @NonNull PlotPlayer<?> issuer,
@@ -265,7 +267,8 @@ public final class TabCompletions {
      * @return List of completions
      * @deprecated In favor {@link #completePlayers(String, PlotPlayer, String, List, Predicate)}
      */
-    @Deprecated(forRemoval = true)
+    @SuppressWarnings("unused")
+    @Deprecated(forRemoval = true, since = "6.1.3")
     private static List<Command> completePlayers(
             final @NonNull String cacheIdentifier,
             final @NonNull String input, final @NonNull List<String> existing,
@@ -281,6 +284,7 @@ public final class TabCompletions {
      * @param existing        Players that should not be included in completions
      * @param uuidFilter      Filter applied before caching values
      * @return List of completions
+     * @since 6.1.3
      */
     private static List<Command> completePlayers(
             final @NonNull String cacheIdentifier,

@@ -8,7 +8,7 @@
  *                                    | |
  *                                    |_|
  *            PlotSquared plot management system for Minecraft
- *                  Copyright (C) 2021 IntellectualSites
+ *               Copyright (C) 2014 - 2022 IntellectualSites
  *
  *     This program is free software: you can redistribute it and/or modify
  *     it under the terms of the GNU General Public License as published by
@@ -28,6 +28,7 @@ package com.plotsquared.core.command;
 import com.plotsquared.core.configuration.caption.Caption;
 import com.plotsquared.core.configuration.caption.LocaleHolder;
 import com.plotsquared.core.configuration.caption.TranslatableCaption;
+import com.plotsquared.core.player.PlotPlayer;
 import org.checkerframework.checker.nullness.qual.NonNull;
 
 /**
@@ -95,4 +96,16 @@ public enum CommandCategory implements Caption {
     public String getComponent(@NonNull LocaleHolder localeHolder) {
         return this.caption.getComponent(localeHolder);
     }
+
+    /**
+     * Checks if a player has access to this command category
+     *
+     * @param player The player to check against
+     * @return {@code true} if at least one command of this category can be executed by the player, {@code false} otherwise
+     * @since 6.5.0
+     */
+    boolean canAccess(PlotPlayer<?> player) {
+        return !MainCommand.getInstance().getCommands(this, player).isEmpty();
+    }
+
 }

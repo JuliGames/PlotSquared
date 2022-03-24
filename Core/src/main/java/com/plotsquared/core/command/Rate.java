@@ -8,7 +8,7 @@
  *                                    | |
  *                                    |_|
  *            PlotSquared plot management system for Minecraft
- *                  Copyright (C) 2021 IntellectualSites
+ *               Copyright (C) 2014 - 2022 IntellectualSites
  *
  *     This program is free software: you can redistribute it and/or modify
  *     it under the terms of the GNU General Public License as published by
@@ -104,7 +104,7 @@ public class Rate extends SubCommand {
                     UUID uuid = player.getUUID();
                     for (Plot p : plots) {
                         if ((!Settings.Done.REQUIRED_FOR_RATINGS || DoneFlag.isDone(p)) && p
-                                .isBasePlot() && (!p.getRatings().containsKey(uuid)) && !p
+                                .isBasePlot() && !p.getRatings().containsKey(uuid) && !p
                                 .isAdded(uuid)) {
                             p.teleportPlayer(player, TeleportCause.COMMAND_RATE, result -> {
                             });

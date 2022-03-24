@@ -8,7 +8,7 @@
  *                                    | |
  *                                    |_|
  *            PlotSquared plot management system for Minecraft
- *                  Copyright (C) 2021 IntellectualSites
+ *               Copyright (C) 2014 - 2022 IntellectualSites
  *
  *     This program is free software: you can redistribute it and/or modify
  *     it under the terms of the GNU General Public License as published by
@@ -105,13 +105,17 @@ public class Move extends SubCommand {
             return CompletableFuture.completedFuture(false);
         }
 
+        // Set strings here as the plot objects are mutable (the PlotID changes after being moved).
+        String p1 = plot1.toString();
+        String p2 = plot2.toString();
+
         return plot1.getPlotModificationManager().move(plot2, player, () -> {
         }, false).thenApply(result -> {
             if (result) {
                 player.sendMessage(
                         TranslatableCaption.of("move.move_success"),
-                        Template.of("origin", plot1.toString()),
-                        Template.of("target", plot2.toString())
+                        Template.of("origin", p1),
+                        Template.of("target", p2)
                 );
                 return true;
             } else {

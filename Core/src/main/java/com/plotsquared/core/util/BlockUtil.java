@@ -8,7 +8,7 @@
  *                                    | |
  *                                    |_|
  *            PlotSquared plot management system for Minecraft
- *                  Copyright (C) 2021 IntellectualSites
+ *               Copyright (C) 2014 - 2022 IntellectualSites
  *
  *     This program is free software: you can redistribute it and/or modify
  *     it under the terms of the GNU General Public License as published by
@@ -90,7 +90,7 @@ public final class BlockUtil {
         if (id.length() == 1 && id.charAt(0) == '*') {
             return FuzzyBlockState.builder().type(BlockTypes.AIR).build();
         }
-        String mutableId = id;
+        String mutableId;
         mutableId = id.toLowerCase();
         BlockType type = BlockTypes.get(mutableId);
         if (type != null) {

@@ -8,7 +8,7 @@
  *                                    | |
  *                                    |_|
  *            PlotSquared plot management system for Minecraft
- *                  Copyright (C) 2021 IntellectualSites
+ *               Copyright (C) 2014 - 2022 IntellectualSites
  *
  *     This program is free software: you can redistribute it and/or modify
  *     it under the terms of the GNU General Public License as published by
@@ -29,7 +29,6 @@ import com.google.inject.AbstractModule;
 import com.google.inject.Provides;
 import com.google.inject.Singleton;
 import com.plotsquared.bukkit.managers.BukkitWorldManager;
-import com.plotsquared.bukkit.managers.HyperverseWorldManager;
 import com.plotsquared.bukkit.managers.MultiverseWorldManager;
 import com.plotsquared.core.util.PlatformWorldManager;
 import org.bukkit.Bukkit;
@@ -37,12 +36,11 @@ import org.bukkit.World;
 
 public class WorldManagerModule extends AbstractModule {
 
+    @SuppressWarnings("removal") // Internal use only
     @Provides
     @Singleton
     PlatformWorldManager<World> provideWorldManager() {
-        if (Bukkit.getPluginManager().getPlugin("Hyperverse") != null) {
-            return new HyperverseWorldManager();
-        } else if (Bukkit.getPluginManager().getPlugin("Multiverse-Core") != null) {
+        if (Bukkit.getPluginManager().getPlugin("Multiverse-Core") != null) {
             return new MultiverseWorldManager();
         } else {
             return new BukkitWorldManager();

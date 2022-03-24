@@ -8,7 +8,7 @@
  *                                    | |
  *                                    |_|
  *            PlotSquared plot management system for Minecraft
- *                  Copyright (C) 2021 IntellectualSites
+ *               Copyright (C) 2014 - 2022 IntellectualSites
  *
  *     This program is free software: you can redistribute it and/or modify
  *     it under the terms of the GNU General Public License as published by
@@ -37,7 +37,6 @@ import com.plotsquared.core.inject.annotations.WorldConfig;
 import com.plotsquared.core.listener.PlotListener;
 import com.plotsquared.core.location.BlockLoc;
 import com.plotsquared.core.location.Location;
-import com.plotsquared.core.location.PlotLoc;
 import com.plotsquared.core.plot.Plot;
 import com.plotsquared.core.plot.PlotAreaType;
 import com.plotsquared.core.plot.PlotId;
@@ -58,7 +57,9 @@ import java.nio.file.Files;
 
 public class SinglePlotArea extends GridPlotWorld {
 
+    @SuppressWarnings({"unused", "FieldCanBeLocal"})
     private final EventDispatcher eventDispatcher;
+    @SuppressWarnings({"unused", "FieldCanBeLocal"})
     private final PlotListener plotListener;
     public boolean VOID = false;
 
@@ -76,6 +77,39 @@ public class SinglePlotArea extends GridPlotWorld {
         this.plotListener = plotListener;
         this.setAllowSigns(false);
         this.setDefaultHome(new BlockLoc(Integer.MAX_VALUE, Integer.MIN_VALUE, Integer.MAX_VALUE));
+    }
+
+    /**
+     * Returns true if the given string matches the naming system used to identify single plot worlds
+     * e.g. -1_5 represents plot id *;-1;5. "*" being the plot area name given to single plot world
+     * {@link com.plotsquared.core.plot.PlotArea}.
+     * @since 6.1.4
+     */
+    public static boolean isSinglePlotWorld(String worldName) {
+        int len = worldName.length();
+        int separator = 0;
+        for (int i = 0; i < len; i++) {
+            switch (worldName.charAt(i)) {
+                case '_':
+                    separator++;
+                    break;
+                case '-':
+                case '0':
+                case '1':
+                case '2':
+                case '3':
+                case '4':
+                case '5':
+                case '6':
+                case '7':
+                case '8':
+                case '9':
+                    break;
+                default:
+                    return false;
+            }
+        }
+        return separator == 1;
     }
 
     @NonNull
@@ -242,6 +276,7 @@ public class SinglePlotArea extends GridPlotWorld {
         return false; // do not create signs for single plots
     }
 
+    @SuppressWarnings("deprecation")
     protected Plot adapt(Plot p) {
         if (p instanceof SinglePlot) {
             return p;

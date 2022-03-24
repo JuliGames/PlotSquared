@@ -8,7 +8,7 @@
  *                                    | |
  *                                    |_|
  *            PlotSquared plot management system for Minecraft
- *                  Copyright (C) 2021 IntellectualSites
+ *               Copyright (C) 2014 - 2022 IntellectualSites
  *
  *     This program is free software: you can redistribute it and/or modify
  *     it under the terms of the GNU General Public License as published by
@@ -31,6 +31,7 @@ import org.checkerframework.checker.nullness.qual.NonNull;
 
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Objects;
 
 /**
  * A plot flag is any property that can be assigned
@@ -163,6 +164,7 @@ public abstract class PlotFlag<T, F extends PlotFlag<T, F>> {
      * Get if the flag's permission should check for values. E.g. plots.flag.set.music.VALUE
      *
      * @return if valued permission
+     * @since 6.0.10
      */
     public boolean isValuedPermission() {
         return true;
@@ -199,34 +201,30 @@ public abstract class PlotFlag<T, F extends PlotFlag<T, F>> {
         return Collections.emptyList();
     }
 
+    @Override
     public boolean equals(final Object o) {
-        if (o == this) {
+        if (this == o) {
             return true;
         }
-        if (!(o instanceof final PlotFlag<?, ?> other)) {
+        if (o == null || getClass() != o.getClass()) {
             return false;
         }
-        if (!other.canEqual(this)) {
-            return false;
-        }
-        final Object this$value = this.getValue();
-        final Object other$value = other.getValue();
-        if (this$value == null ? other$value != null : !this$value.equals(other$value)) {
-            return false;
-        }
-        return true;
+        final PlotFlag<?, ?> plotFlag = (PlotFlag<?, ?>) o;
+        return value.equals(plotFlag.value);
     }
 
+    @Override
+    public int hashCode() {
+        return value.hashCode();
+    }
+
+    /**
+     * @deprecated This method is not meant to be invoked or overridden, with no replacement.
+     */
+    @Deprecated(forRemoval = true, since = "6.6.0")
     protected boolean canEqual(final Object other) {
         return other instanceof PlotFlag;
     }
 
-    public int hashCode() {
-        final int PRIME = 59;
-        int result = 1;
-        final Object $value = this.getValue();
-        result = result * PRIME + ($value == null ? 43 : $value.hashCode());
-        return result;
-    }
 
 }

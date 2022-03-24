@@ -8,7 +8,7 @@
  *                                    | |
  *                                    |_|
  *            PlotSquared plot management system for Minecraft
- *                  Copyright (C) 2021 IntellectualSites
+ *               Copyright (C) 2014 - 2022 IntellectualSites
  *
  *     This program is free software: you can redistribute it and/or modify
  *     it under the terms of the GNU General Public License as published by
@@ -371,7 +371,7 @@ public interface AbstractDB {
     /**
      * Don't use this method unless you want to ruin someone's server.
      *
-     * @return true if the tables were deleted, false when an error is encountered
+     * @return {@code true} if the tables were deleted, {@code false} when an error is encountered
      */
     boolean deleteTables();
 

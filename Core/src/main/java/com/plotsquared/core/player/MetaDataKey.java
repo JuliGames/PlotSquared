@@ -8,7 +8,7 @@
  *                                    | |
  *                                    |_|
  *            PlotSquared plot management system for Minecraft
- *                  Copyright (C) 2021 IntellectualSites
+ *               Copyright (C) 2014 - 2022 IntellectualSites
  *
  *     This program is free software: you can redistribute it and/or modify
  *     it under the terms of the GNU General Public License as published by
@@ -62,6 +62,7 @@ public final class MetaDataKey<T> {
      * @param <T>  Type
      * @return MetaData key instance
      */
+    @SuppressWarnings("unchecked")
     public static @NonNull <T> MetaDataKey<T> of(final @NonNull String key, final @NonNull TypeLiteral<T> type) {
         synchronized (keyMetaData) {
             return (MetaDataKey<T>)

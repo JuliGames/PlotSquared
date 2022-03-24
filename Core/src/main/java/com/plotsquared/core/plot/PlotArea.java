@@ -8,7 +8,7 @@
  *                                    | |
  *                                    |_|
  *            PlotSquared plot management system for Minecraft
- *                  Copyright (C) 2021 IntellectualSites
+ *               Copyright (C) 2014 - 2022 IntellectualSites
  *
  *     This program is free software: you can redistribute it and/or modify
  *     it under the terms of the GNU General Public License as published by
@@ -34,8 +34,6 @@ import com.plotsquared.core.configuration.ConfigurationNode;
 import com.plotsquared.core.configuration.ConfigurationSection;
 import com.plotsquared.core.configuration.ConfigurationUtil;
 import com.plotsquared.core.configuration.Settings;
-import com.plotsquared.core.configuration.caption.CaptionUtility;
-import com.plotsquared.core.configuration.caption.LocaleHolder;
 import com.plotsquared.core.configuration.caption.TranslatableCaption;
 import com.plotsquared.core.configuration.file.YamlConfiguration;
 import com.plotsquared.core.generator.GridPlotWorld;
@@ -54,7 +52,6 @@ import com.plotsquared.core.plot.flag.FlagParseException;
 import com.plotsquared.core.plot.flag.GlobalFlagContainer;
 import com.plotsquared.core.plot.flag.PlotFlag;
 import com.plotsquared.core.plot.flag.implementations.DoneFlag;
-import com.plotsquared.core.plot.flag.types.DoubleFlag;
 import com.plotsquared.core.queue.GlobalBlockQueue;
 import com.plotsquared.core.queue.QueueCoordinator;
 import com.plotsquared.core.util.MathMan;
@@ -124,7 +121,7 @@ public abstract class PlotArea {
             new FlagContainer(GlobalFlagContainer.getInstance());
     private final YamlConfiguration worldConfiguration;
     private final GlobalBlockQueue globalBlockQueue;
-    private final boolean roadFlags = false;
+    private boolean roadFlags = false;
     private boolean autoMerge = false;
     private boolean allowSigns = true;
     private boolean miscSpawnUnowned = false;
@@ -144,8 +141,10 @@ public abstract class PlotArea {
     private boolean homeAllowNonmember = false;
     private BlockLoc nonmemberHome;
     private BlockLoc defaultHome;
-    private int maxBuildHeight = 256;
-    private int minBuildHeight = 1;
+    private int maxBuildHeight = PlotSquared.platform().versionMaxHeight() + 1; // Exclusive
+    private int minBuildHeight = PlotSquared.platform().versionMinHeight() + 1; // Inclusive
+    private int maxGenHeight = PlotSquared.platform().versionMaxHeight(); // Inclusive
+    private int minGenHeight = PlotSquared.platform().versionMinHeight(); // Inclusive
     private GameMode gameMode = GameModes.CREATIVE;
     private Map<String, PlotExpression> prices = new HashMap<>();
     private List<String> schematics = new ArrayList<>();
@@ -295,7 +294,7 @@ public abstract class PlotArea {
      * Check if a PlotArea is compatible (move/copy etc.).
      *
      * @param plotArea the {@link PlotArea} to compare
-     * @return true if both areas are compatible
+     * @return {@code true} if both areas are compatible
      */
     public boolean isCompatible(final @NonNull PlotArea plotArea) {
         final ConfigurationSection section = this.worldConfiguration.getConfigurationSection("worlds");
@@ -361,6 +360,8 @@ public abstract class PlotArea {
         this.worldBorder = config.getBoolean("world.border");
         this.maxBuildHeight = config.getInt("world.max_height");
         this.minBuildHeight = config.getInt("world.min_height");
+        this.minGenHeight = config.getInt("world.min_gen_height");
+        this.maxGenHeight = config.getInt("world.max_gen_height");
 
         switch (config.getString("world.gamemode").toLowerCase()) {
             case "creative", "c", "1" -> this.gameMode = GameModes.CREATIVE;
@@ -429,6 +430,7 @@ public abstract class PlotArea {
                 }
             }
         }
+        this.roadFlags = roadflags.size() > 0;
         this.getRoadFlagContainer().addAll(parseFlags(roadflags));
         ConsolePlayer.getConsole().sendMessage(
                 TranslatableCaption.of("flags.road_flags"),
@@ -436,38 +438,6 @@ public abstract class PlotArea {
         );
 
         loadConfiguration(config);
-    }
-
-    private Component getFlagsComponent(Component flagsComponent, Collection<PlotFlag<?, ?>> flagCollection) {
-        if (flagCollection.isEmpty()) {
-            flagsComponent = MINI_MESSAGE.parse(TranslatableCaption.of("flag.no_flags").getComponent(LocaleHolder.console()));
-        } else {
-            String prefix = " ";
-            for (final PlotFlag<?, ?> flag : flagCollection) {
-                Object value;
-                if (flag instanceof DoubleFlag && !Settings.General.SCIENTIFIC) {
-                    value = FLAG_DECIMAL_FORMAT.format(flag.getValue());
-                } else {
-                    value = flag.toString();
-                }
-                Component snip = MINI_MESSAGE.parse(
-                        prefix + CaptionUtility
-                                .format(
-                                        ConsolePlayer.getConsole(),
-                                        TranslatableCaption.of("info.plot_flag_list").getComponent(LocaleHolder.console())
-                                ),
-                        Template.of("flag", flag.getName()),
-                        Template.of("value", CaptionUtility.formatRaw(ConsolePlayer.getConsole(), value.toString()))
-                );
-                if (flagsComponent != null) {
-                    flagsComponent.append(snip);
-                } else {
-                    flagsComponent = snip;
-                }
-                prefix = ", ";
-            }
-        }
-        return flagsComponent;
     }
 
     public abstract void loadConfiguration(ConfigurationSection config);
@@ -515,6 +485,8 @@ public abstract class PlotArea {
         options.put("home.nonmembers", position);
         options.put("world.max_height", this.getMaxBuildHeight());
         options.put("world.min_height", this.getMinBuildHeight());
+        options.put("world.min_gen_height", this.getMinGenHeight());
+        options.put("world.max_gen_height", this.getMaxGenHeight());
         options.put("world.gamemode", this.getGameMode().getName().toLowerCase());
         options.put("road.flags.default", null);
 
@@ -1109,8 +1081,8 @@ public abstract class PlotArea {
                     BlockVector2 pos1 = BlockVector2.at(value.getP1().getX(), value.getP1().getY());
                     BlockVector2 pos2 = BlockVector2.at(value.getP2().getX(), value.getP2().getY());
                     return new CuboidRegion(
-                            pos1.toBlockVector3(),
-                            pos2.toBlockVector3(Plot.MAX_HEIGHT - 1)
+                            pos1.toBlockVector3(getMinGenHeight()),
+                            pos2.toBlockVector3(getMaxGenHeight())
                     );
                 }
             };
@@ -1132,7 +1104,7 @@ public abstract class PlotArea {
      * If a schematic is available, it can be used for plot claiming.
      *
      * @param schematic the schematic to look for.
-     * @return true if the schematic exists, false otherwise.
+     * @return {@code true} if the schematic exists, {@code false} otherwise.
      */
     public boolean hasSchematic(@NonNull String schematic) {
         return getSchematics().contains(schematic.toLowerCase());
@@ -1141,7 +1113,7 @@ public abstract class PlotArea {
     /**
      * Get whether economy is enabled and used on this plot area or not.
      *
-     * @return true if this plot area uses economy, false otherwise.
+     * @return {@code true} if this plot area uses economy, {@code false} otherwise.
      */
     public boolean useEconomy() {
         return useEconomy;
@@ -1150,7 +1122,7 @@ public abstract class PlotArea {
     /**
      * Get whether the plot area is limited by a world border or not.
      *
-     * @return true if the plot area has a world border, false otherwise.
+     * @return {@code true} if the plot area has a world border, {@code false} otherwise.
      */
     public boolean hasWorldBorder() {
         return worldBorder;
@@ -1159,7 +1131,7 @@ public abstract class PlotArea {
     /**
      * Get whether plot signs are allowed or not.
      *
-     * @return true if plot signs are allow, false otherwise.
+     * @return {@code true} if plot signs are allowed, {@code false} otherwise.
      */
     public boolean allowSigns() {
         return allowSigns;
@@ -1307,8 +1279,9 @@ public abstract class PlotArea {
      * @deprecated Use {@link #signMaterial()}. This method is used for 1.13 only and
      *         will be removed without replacement in favor of {@link #signMaterial()}
      *         once we remove the support for 1.13.
+     * @since 6.0.3
      */
-    @Deprecated(forRemoval = true)
+    @Deprecated(forRemoval = true, since = "6.0.3")
     public String getLegacySignMaterial() {
         return this.legacySignMaterial;
     }
@@ -1354,14 +1327,18 @@ public abstract class PlotArea {
 
     /**
      * Get the location for non-members to be teleported to.
+     *
+     * @since 6.1.4
      */
     public BlockLoc nonmemberHome() {
         return this.nonmemberHome;
     }
 
     /**
-     * Get the default location for players to be teleported to. May be overriden by {@link #nonmemberHome} if the player is
+     * Get the default location for players to be teleported to. May be overridden by {@link #nonmemberHome} if the player is
      * not a member of the plot.
+     *
+     * @since 6.1.4
      */
     public BlockLoc defaultHome() {
         return this.defaultHome;
@@ -1370,7 +1347,7 @@ public abstract class PlotArea {
     /**
      * @deprecated Use {@link #nonmemberHome}
      */
-    @Deprecated(forRemoval = true)
+    @Deprecated(forRemoval = true, since = "6.1.4")
     public PlotLoc getNonmemberHome() {
         return new PlotLoc(this.defaultHome.getX(), this.defaultHome.getY(), this.defaultHome.getZ());
     }
@@ -1378,7 +1355,7 @@ public abstract class PlotArea {
     /**
      * @deprecated Use {@link #defaultHome}
      */
-    @Deprecated(forRemoval = true)
+    @Deprecated(forRemoval = true, since = "6.1.4")
     public PlotLoc getDefaultHome() {
         return new PlotLoc(this.defaultHome.getX(), this.defaultHome.getY(), this.defaultHome.getZ());
     }
@@ -1387,12 +1364,36 @@ public abstract class PlotArea {
         this.defaultHome = defaultHome;
     }
 
+    /**
+     * Get the maximum height players may build in. Exclusive.
+     */
     public int getMaxBuildHeight() {
         return this.maxBuildHeight;
     }
 
+    /**
+     * Get the minimum height players may build in. Inclusive.
+     */
     public int getMinBuildHeight() {
         return this.minBuildHeight;
+    }
+
+    /**
+     * Get the min height from which P2 will generate blocks. Inclusive.
+     *
+     * @since 6.6.0
+     */
+    public int getMinGenHeight() {
+        return this.minGenHeight;
+    }
+
+    /**
+     * Get the max height to which P2 will generate blocks. Inclusive.
+     *
+     * @since 6.6.0
+     */
+    public int getMaxGenHeight() {
+        return this.maxGenHeight;
     }
 
     public GameMode getGameMode() {

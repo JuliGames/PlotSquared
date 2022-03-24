@@ -8,7 +8,7 @@
  *                                    | |
  *                                    |_|
  *            PlotSquared plot management system for Minecraft
- *                  Copyright (C) 2021 IntellectualSites
+ *               Copyright (C) 2014 - 2022 IntellectualSites
  *
  *     This program is free software: you can redistribute it and/or modify
  *     it under the terms of the GNU General Public License as published by
@@ -56,6 +56,7 @@ public abstract class QueueCoordinator {
     private Object chunkObject;
     private final AtomicBoolean enqueued = new AtomicBoolean();
 
+    @SuppressWarnings({"unused", "FieldCanBeLocal"})
     @Inject
     private GlobalBlockQueue blockQueue;
 
@@ -74,12 +75,29 @@ public abstract class QueueCoordinator {
      * @param x chunk x coordinate
      * @param z chunk z coordinate
      * @return a new {@link ScopedQueueCoordinator}
+     * @deprecated Use {@link ScopedQueueCoordinator#getForChunk(int, int, int, int)}
      */
+    @Deprecated(forRemoval = true, since = "6.6.0")
     public ScopedQueueCoordinator getForChunk(int x, int z) {
+        if (getWorld() == null) {
+            return getForChunk(x, z, PlotSquared.platform().versionMinHeight(), PlotSquared.platform().versionMaxHeight());
+        }
+        return getForChunk(x, z, getWorld().getMinY(), getWorld().getMaxY());
+    }
+
+    /**
+     * Get a {@link ScopedQueueCoordinator} limited to the chunk at the specific chunk Coordinates
+     *
+     * @param x chunk x coordinate
+     * @param z chunk z coordinate
+     * @return a new {@link ScopedQueueCoordinator}
+     * @since 6.6.0
+     */
+    public ScopedQueueCoordinator getForChunk(int x, int z, int minY, int maxY) {
         int bx = x << 4;
         int bz = z << 4;
-        return new ScopedQueueCoordinator(this, Location.at(getWorld().getName(), bx, 0, bz),
-                Location.at(getWorld().getName(), bx + 15, 255, bz + 255)
+        return new ScopedQueueCoordinator(this, Location.at(getWorld().getName(), bx, minY, bz),
+                Location.at(getWorld().getName(), bx + 15, maxY, bz + 15)
         );
     }
 
@@ -208,7 +226,7 @@ public abstract class QueueCoordinator {
      *         <br>
      *         Scheduled for removal once we drop the support for versions not supporting 3D biomes.
      */
-    @Deprecated(forRemoval = true)
+    @Deprecated(forRemoval = true, since = "6.0.0")
     public abstract boolean setBiome(int x, int z, @NonNull BiomeType biome);
 
     /**
@@ -326,6 +344,7 @@ public abstract class QueueCoordinator {
      * Enqueue the queue to start it
      *
      * @return success or not
+     * @since 6.0.10
      */
     public boolean enqueue() {
         boolean success = false;
@@ -402,7 +421,7 @@ public abstract class QueueCoordinator {
      */
     public void setCuboid(@NonNull Location pos1, @NonNull Location pos2, @NonNull BlockState block) {
         int yMin = Math.min(pos1.getY(), pos2.getY());
-        int yMax = Math.min(255, Math.max(pos1.getY(), pos2.getY()));
+        int yMax = Math.max(pos1.getY(), pos2.getY());
         int xMin = Math.min(pos1.getX(), pos2.getX());
         int xMax = Math.max(pos1.getX(), pos2.getX());
         int zMin = Math.min(pos1.getZ(), pos2.getZ());
@@ -425,7 +444,7 @@ public abstract class QueueCoordinator {
      */
     public void setCuboid(@NonNull Location pos1, @NonNull Location pos2, @NonNull Pattern blocks) {
         int yMin = Math.min(pos1.getY(), pos2.getY());
-        int yMax = Math.min(255, Math.max(pos1.getY(), pos2.getY()));
+        int yMax = Math.max(pos1.getY(), pos2.getY());
         int xMin = Math.min(pos1.getX(), pos2.getX());
         int xMax = Math.max(pos1.getX(), pos2.getX());
         int zMin = Math.min(pos1.getZ(), pos2.getZ());
@@ -448,7 +467,7 @@ public abstract class QueueCoordinator {
      */
     public void setBiomeCuboid(@NonNull Location pos1, @NonNull Location pos2, @NonNull BiomeType biome) {
         int yMin = Math.min(pos1.getY(), pos2.getY());
-        int yMax = Math.min(255, Math.max(pos1.getY(), pos2.getY()));
+        int yMax = Math.max(pos1.getY(), pos2.getY());
         int xMin = Math.min(pos1.getX(), pos2.getX());
         int xMax = Math.max(pos1.getX(), pos2.getX());
         int zMin = Math.min(pos1.getZ(), pos2.getZ());
@@ -460,6 +479,34 @@ public abstract class QueueCoordinator {
                 }
             }
         }
+    }
+
+    /**
+     * Get the min Y limit associated with the queue
+     */
+    protected int getMinY() {
+        return getWorld() != null ? getWorld().getMinY() : PlotSquared.platform().versionMinHeight();
+    }
+
+    /**
+     * Get the max Y limit associated with the queue
+     */
+    protected int getMaxY() {
+        return getWorld() != null ? getWorld().getMinY() : PlotSquared.platform().versionMaxHeight();
+    }
+
+    /**
+     * Get the min chunk layer associated with the queue. Usually 0 or -4;
+     */
+    protected int getMinLayer() {
+        return (getWorld() != null ? getWorld().getMinY() : PlotSquared.platform().versionMinHeight()) >> 4;
+    }
+
+    /**
+     * Get the max chunk layer associated with the queue. Usually 15 or 19
+     */
+    protected int getMaxLayer() {
+        return (getWorld() != null ? getWorld().getMaxY() : PlotSquared.platform().versionMaxHeight()) >> 4;
     }
 
 }

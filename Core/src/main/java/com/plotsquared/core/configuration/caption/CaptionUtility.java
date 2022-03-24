@@ -8,7 +8,7 @@
  *                                    | |
  *                                    |_|
  *            PlotSquared plot management system for Minecraft
- *                  Copyright (C) 2021 IntellectualSites
+ *               Copyright (C) 2014 - 2022 IntellectualSites
  *
  *     This program is free software: you can redistribute it and/or modify
  *     it under the terms of the GNU General Public License as published by
@@ -103,6 +103,7 @@ public class CaptionUtility {
      * @param miniMessageString the message from which the specified click events should be removed from.
      * @return the string without the click events that are configured to be removed.
      * @see Settings.Chat#CLICK_EVENT_ACTIONS_TO_REMOVE
+     * @since 6.0.10
      */
     public static String stripClickEvents(final @NonNull String miniMessageString) {
         // parse, transform and serialize again
@@ -122,6 +123,7 @@ public class CaptionUtility {
      * @return the string without the click events that are configured to be removed.
      * @see Settings.Chat#CLICK_EVENT_ACTIONS_TO_REMOVE
      * @see #stripClickEvents(String)
+     * @since 6.0.10
      */
     public static String stripClickEvents(
             final @NonNull PlotFlag<?, ?> flag,

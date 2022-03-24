@@ -8,7 +8,7 @@
  *                                    | |
  *                                    |_|
  *            PlotSquared plot management system for Minecraft
- *                  Copyright (C) 2021 IntellectualSites
+ *               Copyright (C) 2014 - 2022 IntellectualSites
  *
  *     This program is free software: you can redistribute it and/or modify
  *     it under the terms of the GNU General Public License as published by
@@ -67,7 +67,7 @@ public class FaweSchematicHandler extends SchematicHandler {
             final PlotPlayer<?> actor,
             final RunnableVal<Boolean> whenDone
     ) {
-        delegate.paste(schematic, plot, xOffset, yOffset, zOffset, autoHeight, whenDone);
+        delegate.paste(schematic, plot, xOffset, yOffset, zOffset, autoHeight, actor, whenDone);
     }
 
     @Override
@@ -75,6 +75,7 @@ public class FaweSchematicHandler extends SchematicHandler {
         return delegate.save(tag, path);
     }
 
+    @SuppressWarnings("removal") // Just the override
     @Override
     public void upload(final CompoundTag tag, final UUID uuid, final String file, final RunnableVal<URL> whenDone) {
         delegate.upload(tag, uuid, file, whenDone);

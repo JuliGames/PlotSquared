@@ -8,7 +8,7 @@
  *                                    | |
  *                                    |_|
  *            PlotSquared plot management system for Minecraft
- *                  Copyright (C) 2021 IntellectualSites
+ *               Copyright (C) 2014 - 2022 IntellectualSites
  *
  *     This program is free software: you can redistribute it and/or modify
  *     it under the terms of the GNU General Public License as published by
@@ -63,7 +63,7 @@ public class HybridGen extends IndependentPlotGenerator {
                 && Settings.Schematics.PASTE_ON_TOP)) {
             minY = world.SCHEM_Y;
         } else {
-            minY = 1;
+            minY = world.getMinBuildHeight();
         }
         BaseBlock[] blocks = world.G_SCH.get(MathMan.pair(relativeX, relativeZ));
         if (blocks != null) {
@@ -91,14 +91,14 @@ public class HybridGen extends IndependentPlotGenerator {
         if (hybridPlotWorld.PLOT_BEDROCK) {
             for (short x = 0; x < 16; x++) {
                 for (short z = 0; z < 16; z++) {
-                    result.setBlock(x, 0, z, BlockTypes.BEDROCK.getDefaultState());
+                    result.setBlock(x, hybridPlotWorld.getMinGenHeight(), z, BlockTypes.BEDROCK.getDefaultState());
                 }
             }
         }
         // Coords
         Location min = result.getMin();
-        int bx = (min.getX()) - hybridPlotWorld.ROAD_OFFSET_X;
-        int bz = (min.getZ()) - hybridPlotWorld.ROAD_OFFSET_Z;
+        int bx = min.getX() - hybridPlotWorld.ROAD_OFFSET_X;
+        int bz = min.getZ() - hybridPlotWorld.ROAD_OFFSET_Z;
         // The relative X-coordinate (within the plot) of the minimum X coordinate
         // contained in the scoped queue
         short relativeOffsetX;
@@ -156,11 +156,12 @@ public class HybridGen extends IndependentPlotGenerator {
             }
         }
         // generation
+        int startY = hybridPlotWorld.getMinGenHeight() + (hybridPlotWorld.PLOT_BEDROCK ? 1: 0);
         for (short x = 0; x < 16; x++) {
             if (insideRoadX[x]) {
                 for (short z = 0; z < 16; z++) {
                     // Road
-                    for (int y = 1; y <= hybridPlotWorld.ROAD_HEIGHT; y++) {
+                    for (int y = startY; y <= hybridPlotWorld.ROAD_HEIGHT; y++) {
                         result.setBlock(x, y, z, hybridPlotWorld.ROAD_BLOCK.toPattern());
                     }
                     if (hybridPlotWorld.ROAD_SCHEMATIC_ENABLED) {
@@ -171,7 +172,7 @@ public class HybridGen extends IndependentPlotGenerator {
                 for (short z = 0; z < 16; z++) {
                     if (insideRoadZ[z]) {
                         // road
-                        for (int y = 1; y <= hybridPlotWorld.ROAD_HEIGHT; y++) {
+                        for (int y = startY; y <= hybridPlotWorld.ROAD_HEIGHT; y++) {
                             result.setBlock(x, y, z, hybridPlotWorld.ROAD_BLOCK.toPattern());
                         }
                         if (hybridPlotWorld.ROAD_SCHEMATIC_ENABLED) {
@@ -181,7 +182,7 @@ public class HybridGen extends IndependentPlotGenerator {
                         }
                     } else {
                         // wall
-                        for (int y = 1; y <= hybridPlotWorld.WALL_HEIGHT; y++) {
+                        for (int y = startY; y <= hybridPlotWorld.WALL_HEIGHT; y++) {
                             result.setBlock(x, y, z, hybridPlotWorld.WALL_FILLING.toPattern());
                         }
                         if (!hybridPlotWorld.ROAD_SCHEMATIC_ENABLED) {
@@ -201,7 +202,7 @@ public class HybridGen extends IndependentPlotGenerator {
                 for (short z = 0; z < 16; z++) {
                     if (insideRoadZ[z]) {
                         // road
-                        for (int y = 1; y <= hybridPlotWorld.ROAD_HEIGHT; y++) {
+                        for (int y = startY; y <= hybridPlotWorld.ROAD_HEIGHT; y++) {
                             result.setBlock(x, y, z, hybridPlotWorld.ROAD_BLOCK.toPattern());
                         }
                         if (hybridPlotWorld.ROAD_SCHEMATIC_ENABLED) {
@@ -211,7 +212,7 @@ public class HybridGen extends IndependentPlotGenerator {
                         }
                     } else if (insideWallZ[z]) {
                         // wall
-                        for (int y = 1; y <= hybridPlotWorld.WALL_HEIGHT; y++) {
+                        for (int y = startY; y <= hybridPlotWorld.WALL_HEIGHT; y++) {
                             result.setBlock(x, y, z, hybridPlotWorld.WALL_FILLING.toPattern());
                         }
                         if (!hybridPlotWorld.ROAD_SCHEMATIC_ENABLED) {
@@ -227,7 +228,7 @@ public class HybridGen extends IndependentPlotGenerator {
                         }
                     } else {
                         // plot
-                        for (int y = 1; y < hybridPlotWorld.PLOT_HEIGHT; y++) {
+                        for (int y = startY; y < hybridPlotWorld.PLOT_HEIGHT; y++) {
                             result.setBlock(x, y, z, hybridPlotWorld.MAIN_BLOCK.toPattern());
                         }
                         result.setBlock(x, hybridPlotWorld.PLOT_HEIGHT, z,
